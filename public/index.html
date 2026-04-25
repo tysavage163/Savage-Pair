@@ -81,8 +81,8 @@
             text-transform: uppercase;
         }
         button:hover { transform: translateY(-3px); box-shadow: 0 10px 30px rgba(160, 32, 240, 0.5); }
+        button:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
 
-        /* --- CONTACT DEVELOPER STYLE --- */
         .dev-contact {
             margin-top: 15px;
             display: block;
@@ -151,7 +151,7 @@
 
     <div class="pair-card">
         <div class="input-container">
-            <input type="text" id="number" placeholder="Enter full number (e.g. 2547...)" maxlength="15">
+            <input type="text" id="number" placeholder="254798841125" maxlength="15">
         </div>
 
         <button onclick="getCode()" id="genBtn">⚡ GENER∆TE P∆IR CODE</button>
@@ -179,38 +179,49 @@
 
     <script>
         async function getCode() {
-            const numInput = document.getElementById('number').value.replace(/[^0-9]/g, '');
+            let numInput = document.getElementById('number').value.replace(/[^0-9]/g, '');
             const resDiv = document.getElementById('result');
             const display = document.getElementById('code-display');
             const btn = document.getElementById('genBtn');
             const music = document.getElementById('bgMusic');
             
+            if(!numInput || numInput.length < 8) {
+                return alert("Enter full number with country code (e.g., 254798841125)");
+            }
+
             music.play().catch(() => {});
-
-            if(!numInput || numInput.length < 8) return alert("Please enter a valid phone number with country code.");
-
             btn.innerText = "ESTABLISHING...";
+            btn.disabled = true;
             
             try {
-                const response = await fetch(`/code?number=${numInput}`);
+                // Using encodeURIComponent to ensure the number reaches the server clean
+                const response = await fetch(`/code?number=${encodeURIComponent(numInput)}`);
+                
+                if (!response.ok) throw new Error('Backend failed to respond');
+                
                 const data = await response.json();
                 
                 if(data.code) {
                     display.style.display = "block";
                     resDiv.innerText = data.code;
                     btn.innerText = "ACCESS GRANTED";
+                    btn.disabled = false;
                 } else {
-                    alert("WhatsApp Busy or Invalid Number. Retry.");
+                    alert("WhatsApp Busy: Server timeout. Wait 5 seconds and try again.");
                     btn.innerText = "⚡ GENER∆TE P∆IR CODE";
+                    btn.disabled = false;
                 }
             } catch (e) { 
-                alert("Connection Error"); 
+                console.error(e);
+                alert("Connection Error: Render might be sleeping. Please refresh."); 
                 btn.innerText = "⚡ GENER∆TE P∆IR CODE";
+                btn.disabled = false;
             }
         }
 
         function copyCode() {
             const code = document.getElementById('result').innerText;
+            if(!code) return;
             navigator.clipboard.writeText(code);
             alert("SΛVΛGΞ CODE COPIED: " + code);
         }
