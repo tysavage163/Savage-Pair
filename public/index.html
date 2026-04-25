@@ -3,106 +3,90 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SΛVΛGΞ ULTRA-PAIR</title>
+    <title>SΛVΛGΞ TECH</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; outline: none; }
         
         body { 
-            background: linear-gradient(rgba(10, 0, 15, 0.93), rgba(15, 0, 10, 0.97)), 
-                        url('https://raw.githubusercontent.com/tysavage163/Savage-Pair/main/bg.png'); /* Using your unique background */
+            background: linear-gradient(rgba(10, 0, 15, 0.85), rgba(15, 0, 10, 0.9)), 
+                        url('https://raw.githubusercontent.com/tysavage163/Savage-Pair/main/bg.png');
             background-size: cover;
             background-position: center;
             background-attachment: fixed;
-            color: #A020F0; /* Electric Purple */
-            font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            color: #A020F0; 
+            font-family: 'SF Pro Display', sans-serif;
             display: flex; 
             flex-direction: column; 
             align-items: center; 
-            justify-content: flex-start;
+            justify-content: center;
             min-height: 100vh; 
-            text-align: center;
             padding: 20px;
         }
 
-        /* Top Header Area (Similar layout, unique text) */
-        .header { margin-top: 50px; margin-bottom: 50px; }
-        .system-title { color: #A020F0; font-size: 28px; font-weight: bold; text-transform: uppercase; letter-spacing: 3px; text-shadow: 0 0 15px #A020F0; }
-        .sub-text { font-size: 13px; color: #fff; opacity: 0.7; margin-top: 5px; text-transform: lowercase; }
+        .header { margin-bottom: 30px; text-align: center; }
+        .system-title { color: #A020F0; font-size: 32px; font-weight: bold; letter-spacing: 4px; text-shadow: 0 0 15px #A020F0; }
         
-        /* Status Badge (Unique "Operational" color) */
-        .status-badge { background: rgba(160, 32, 240, 0.15); border: 1px solid #A020F0; color: #fff; padding: 8px 18px; border-radius: 50px; font-size: 11px; text-transform: uppercase; letter-spacing: 2px; margin-top: 15px; display: inline-flex; align-items: center; gap: 8px; }
-        .status-dot { width: 8px; height: 8px; background: #FF1493; border-radius: 50%; box-shadow: 0 0 10px #FF1493; } /* Crimson/Neon Pink for Status */
+        /* Auto-Typing SVG Header */
+        .typing-container { margin: 10px 0; height: 30px; }
 
-        /* MAIN INPUT CARD (Similar structure, unique style) */
         .pair-card {
-            background: rgba(15, 0, 10, 0.6);
-            border: 1px solid rgba(160, 32, 240, 0.3);
-            border-radius: 16px;
+            background: rgba(15, 0, 10, 0.7);
+            border: 1px solid rgba(160, 32, 240, 0.4);
+            border-radius: 20px;
             width: 100%;
-            max-width: 420px;
+            max-width: 400px;
             padding: 30px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
-            backdrop-filter: blur(15px);
-            margin-bottom: 30px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 0 30px rgba(0,0,0,0.8);
+            text-align: center;
         }
 
-        .card-title { color: #fff; font-size: 20px; font-weight: 500; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 25px; }
-        
-        /* Input Field (Unique style, no Cyan) */
         .input-group { position: relative; margin-bottom: 20px; }
-        .input-prefix { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: #A020F0; font-size: 18px; }
         input { 
-            background: rgba(0, 0, 0, 0.5); 
-            border: 1px solid rgba(160, 32, 240, 0.5); 
+            background: rgba(0, 0, 0, 0.6); 
+            border: 1px solid rgba(160, 32, 240, 0.6); 
             color: #fff; 
-            padding: 18px 15px 18px 45px; /* Extra padding left for the + */
+            padding: 18px; 
             width: 100%;
-            border-radius: 10px;
+            border-radius: 12px;
             font-size: 18px;
-            font-family: 'Courier New', monospace; /* Number input is mono */
+            text-align: center;
             transition: 0.3s;
         }
-        input:focus { border-color: #FF1493; box-shadow: 0 0 15px rgba(255, 20, 147, 0.3); } /* Neon Pink Focus */
-        input::placeholder { color: #fff; opacity: 0.4; }
+        input:focus { border-color: #FF1493; box-shadow: 0 0 15px rgba(255, 20, 147, 0.4); }
 
-        /* GENERATE BUTTON (Shifted to Purple Gradient, Unique Shape) */
         button { 
-            background: linear-gradient(135deg, #A020F0 0%, #FF1493 100%); /* Purple to Neon Pink Gradient */
+            background: linear-gradient(135deg, #A020F0 0%, #6600cc 100%); 
             color: #fff; 
             border: none; 
             padding: 18px; 
-            border-radius: 10px;
+            border-radius: 12px;
             font-weight: bold; 
             font-size: 16px;
-            text-transform: uppercase;
             letter-spacing: 2px;
             cursor: pointer; 
-            transition: 0.3s;
             width: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            box-shadow: 0 5px 20px rgba(160, 32, 240, 0.4);
+            transition: 0.3s;
         }
-        button:hover { 
-            box-shadow: 0 8px 30px rgba(255, 20, 147, 0.6);
-            transform: translateY(-2px);
+        button:hover { transform: translateY(-2px); box-shadow: 0 5px 20px rgba(160, 32, 240, 0.6); }
+
+        /* Code Display Area */
+        #code-display {
+            margin-top: 25px;
+            padding: 15px;
+            border-radius: 10px;
+            background: rgba(160, 32, 240, 0.1);
+            border: 1px dashed rgba(160, 32, 240, 0.5);
+            display: none; /* Hidden until generated */
+            cursor: pointer;
         }
+        #result { font-size: 32px; color: #FF1493; font-weight: bold; letter-spacing: 5px; text-shadow: 0 0 10px #FF1493; }
+        .copy-hint { font-size: 10px; color: #fff; opacity: 0.5; margin-top: 5px; text-transform: uppercase; }
 
-        /* Generated Code Result (Shifted to Pink) */
-        #result { margin-top: 30px; font-size: 38px; color: #FF1493; font-weight: bold; letter-spacing: 6px; font-family: 'Courier New', monospace; text-shadow: 0 0 20px #FF1493; min-height: 40px; }
+        .info-box { margin-top: 25px; text-align: left; font-size: 12px; color: rgba(255,255,255,0.6); line-height: 1.6; }
+        .info-box span { color: #FF1493; font-weight: bold; }
 
-        /* INSTRUCTION ITEMS (Unique list styling) */
-        .info-list { width: 100%; max-width: 420px; text-align: left; }
-        .info-item { display: flex; align-items: start; gap: 15px; margin-bottom: 15px; color: rgba(255,255,255,0.7); font-size: 13px; line-height: 1.5; padding: 12px; border-radius: 8px; transition: 0.3s; }
-        .info-item:hover { background: rgba(160, 32, 240, 0.05); color: #fff; }
-        .info-icon { font-size: 16px; margin-top: 2px; color: #FF1493; }
-
-        /* FOOTER (Similar but unique signatures) */
-        .footer { margin-top: 60px; font-size: 11px; opacity: 0.5; color: #fff; text-transform: lowercase; }
-        .sig-text { color: #A020F0; }
-        
+        .footer { margin-top: 40px; font-size: 11px; color: #fff; opacity: 0.4; letter-spacing: 1px; }
     </style>
 </head>
 <body>
@@ -112,66 +96,71 @@
     </audio>
 
     <div class="header">
-        <div class="system-title">SΛVΛGΞ ULTRA</div>
-        <div class="sub-text">NEXT-GEN SESSION PROTOCOL</div>
-        <div class="status-badge"><div class="status-dot"></div> CORE SYSTEMS: ONLINE</div>
+        <div class="system-title">SΛVΛGΞ TECH</div>
+        <div class="typing-container">
+            <img src="https://readme-typing-svg.herokuapp.com?font=Fira+Code&size=14&pause=1000&color=FF1493&center=true&vCenter=true&width=300&lines=CORE+SYSTEM+ACTIVE;ESTABLISHING+SESSION...;WAITING+FOR+INPUT...;SΛVΛGΞ+V1.0.4" />
+        </div>
     </div>
 
     <div class="pair-card">
-        <div class="card-title">GENERATE CODE</div>
-        
         <div class="input-group">
-            <span class="input-prefix">+</span>
-            <input type="text" id="number" placeholder="eg. 254712345678">
+            <input type="text" id="number" placeholder="eg. 2547XXXXXXXX">
         </div>
 
-        <button onclick="getCode()">
-            <span style="font-size: 18px;">☢️</span> FORGE PAIRING KEY
-        </button>
+        <button onclick="getCode()" id="genBtn">GENERATE PAIR CODE</button>
         
-        <div id="result"></div>
-    </div>
-    
-    <div class="info-list">
-        <div class="info-item">
-            <span class="info-icon">🗝️</span>
-            <div>Include country code (e.g. 254), no leading zeros or + sign.</div>
+        <div id="code-display" onclick="copyCode()">
+            <div id="result"></div>
+            <div class="copy-hint">📑 Click to copy code</div>
         </div>
-        <div class="info-item">
-            <span class="info-icon">⏱️</span>
-            <div>The generated code will expire in 60 seconds. Active.</div>
-        </div>
-        <div class="info-item">
-            <span class="info-icon">🔗</span>
-            <div>On WhatsApp: Menu > Linked Devices > Link a Device > Use phone number.</div>
+
+        <div class="info-box">
+            • Include <span>country code</span> (no + sign)<br>
+            • Code expires in <span>60 seconds</span><br>
+            • Linked Devices > <span>Link with phone number</span>
         </div>
     </div>
 
     <div class="footer">
-        © 2025 <span class="sig-text">Spencer | Meryl</span> | Forged in Nairobi
+        Inspired by Meryl
     </div>
 
     <script>
         async function getCode() {
             const num = document.getElementById('number').value;
             const resDiv = document.getElementById('result');
+            const display = document.getElementById('code-display');
+            const btn = document.getElementById('genBtn');
             const music = document.getElementById('bgMusic');
             
-            // Starts your specific vibe track on interaction
-            music.play().catch(e => console.log("Audio waiting..."));
+            music.play().catch(() => {});
 
-            if(!num) return alert("System requires number (e.g. 254...)");
-            if(!num.startsWith("254")) return alert("SΛVΛGΞ Error: Number must follow 254 pattern.");
+            if(!num || !num.startsWith("254")) return alert("Enter valid number starting with 254");
 
-            resDiv.innerText = "FORGING...";
+            btn.innerText = "REQUESTING...";
             
             try {
                 const response = await fetch(`/code?number=${num}`);
                 const data = await response.json();
-                resDiv.innerText = data.code || "RETRY";
+                
+                if(data.code) {
+                    display.style.display = "block";
+                    resDiv.innerText = data.code;
+                    btn.innerText = "CODE GENERATED";
+                } else {
+                    alert("System Busy. Retry.");
+                    btn.innerText = "GENERATE PAIR CODE";
+                }
             } catch (e) { 
-                resDiv.innerText = "SYS ERROR"; 
+                alert("Connection Error"); 
+                btn.innerText = "GENERATE PAIR CODE";
             }
+        }
+
+        function copyCode() {
+            const code = document.getElementById('result').innerText;
+            navigator.clipboard.writeText(code);
+            alert("Code copied to clipboard: " + code);
         }
     </script>
 </body>
