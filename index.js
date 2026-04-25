@@ -8,77 +8,54 @@ const {
     DisconnectReason
 } = require("@whiskeysockets/baileys");
 const pino = require("pino");
-const fs = require("fs-extra"); // Use fs-extra for better folder handling
+const fs = require("fs-extra");
 const path = require("path");
 
 const app = express();
-const PORT = process.env.PORT || 10000; // Render prefers 10000
+// Render uses 10000 by default
+const PORT = process.env.PORT || 10000;
 
 app.use(express.static('public'));
 
-// --- CRUCIAL FOR RENDER HEALTH CHECK ---
+/**
+ * HOME ROUTE
+ * Crucial for Render Health Checks. 
+ * This prevents the "Exited with status 1" or "Timed out" errors.
+ */
 app.get('/', (req, res) => {
     res.status(200).send('SΛVΛGΞ-PAIR SYSTEM ACTIVE');
 });
 
+/**
+ * PAIRING CODE ROUTE
+ * Example: /code?number=254712345678
+ */
 app.get('/code', async (req, res) => {
     let num = req.query.number;
     if (!num) return res.status(400).json({ error: "Number required" });
     
+    // Clean and format the number
     num = num.replace(/[^0-9]/g, '');
-    // Standardizing to Kenya prefix as per your logic
     if (num.startsWith('0')) {
         num = '254' + num.slice(1);
     } else if (!num.startsWith('254') && num.length < 12) {
         num = '254' + num;
     }
 
-    const tempDir = path.join(__dirname, 'tmp', `session_${num}`);
+    // Temporary folder for this specific session
+    const tempDir = path.join(__dirname, 'tmp', `session_${num}_${Date.now()}`);
     if (!fs.existsSync(tempDir)) fs.mkdirSync(tempDir, { recursive: true });
 
-    const { state, saveCreds } = await useMultiFileAuthState(tempDir);
-    const { version } = await fetchLatestBaileysVersion();
+    try {
+        const { state, saveCreds } = await useMultiFileAuthState(tempDir);
+        const { version } = await fetchLatestBaileysVersion();
 
-    const sock = makeWASocket({
-        version,
-        auth: {
-            creds: state.creds,
-            keys: makeCacheableSignalKeyStore(state.keys, pino({ level: "fatal" }))
-        },
-        printQRInTerminal: false,
-        logger: pino({ level: "fatal" }),
-        browser: ["Ubuntu", "Chrome", "20.0.04"]
-    });
-
-    if (!sock.authState.creds.registered) {
-        await delay(1500); // Wait for socket to stabilize
-        try {
-            const code = await sock.requestPairingCode(num);
-            if (!res.headersSent) {
-                res.status(200).json({ code: code });
-            }
-        } catch (err) {
-            console.error(err);
-            if (!res.headersSent) res.status(500).json({ error: "Pairing failed" });
-        }
-    }
-
-    sock.ev.on('creds.update', saveCreds);
-    sock.ev.on('connection.update', async (update) => {
-        const { connection, lastDisconnect } = update;
-        if (connection === 'close') {
-            const reason = lastDisconnect?.error?.output?.statusCode;
-            if (reason !== DisconnectReason.loggedOut) {
-                // Silently clean up temp files on close
-                setTimeout(() => fs.removeSync(tempDir), 5000);
-            }
-        } else if (connection === 'open') {
-            console.log(`Connected to ${num}`);
-            // Send session ID to user here if needed
-        }
-    });
-});
-
-app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-});
+        const sock = makeWASocket({
+            version,
+            auth: {
+                creds: state.creds,
+                keys: makeCacheableSignalKeyStore(state.keys, pino({ level: "fatal" }))
+            },
+            printQRInTerminal: false,
+            logger: pino({ level: "fatal" }),
+            browser: ["Ubuntu", "Chrome",
