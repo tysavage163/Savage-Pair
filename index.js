@@ -18,8 +18,13 @@ app.get('/code', async (req, res) => {
     let num = req.query.number;
     if (!num) return res.status(400).json({ error: "Number required" });
     
+    // Clean number: ensure it starts with 254 and has no symbols
     num = num.replace(/[^0-9]/g, '');
+    if (!num.startsWith('254') && num.startsWith('0')) {
+        num = '254' + num.slice(1);
+    }
 
+    // Unique temp directory to prevent session overlap
     const tempDir = `/tmp/session_${num}_${Date.now()}`;
     const { state, saveCreds } = await useMultiFileAuthState(tempDir);
     const { version } = await fetchLatestBaileysVersion();
@@ -32,44 +37,42 @@ app.get('/code', async (req, res) => {
         },
         printQRInTerminal: false,
         logger: pino({ level: "silent" }),
-        // Optimized Browser String to bypass silent blocks
-        browser: ["SΛVΛGΞ-TECH", "Chrome", "110.0.5481.178"],
+        // FRESH IDENTITY: Mimicking a common Windows Chrome setup to bypass blocks
+        browser: ["Windows", "Chrome", "122.0.6261.112"],
         connectTimeoutMs: 60000,
-        keepAliveIntervalMs: 15000,
-        generateHighQualityLink: true
-    });
-
-    // Handle potential connection closures during pairing
-    sock.ev.on('connection.update', (update) => {
-        const { connection, lastDisconnect } = update;
-        if (connection === 'close') {
-            const shouldReconnect = (lastDisconnect.error)?.output?.statusCode !== DisconnectReason.loggedOut;
-            if (shouldReconnect) console.log("Re-establishing pairing socket...");
-        }
+        defaultQueryTimeoutMs: 0,
+        keepAliveIntervalMs: 10000
     });
 
     try {
-        // STEP 1: Wait for Socket Stability
-        await delay(5000); 
+        // STEP 1: Longer delay to allow Render's network to fully handshake with WhatsApp
+        await delay(8000); 
 
-        // STEP 2: Request Pairing Code
+        // STEP 2: Request Code with Double-Try logic
         if (!sock.authState.creds.registered) {
-            const code = await sock.requestPairingCode(num);
-            const formattedCode = code?.match(/.{1,4}/g)?.join("-") || code;
+            let code = await sock.requestPairingCode(num);
             
-            // Send code to frontend
+            // If the first request is "silent," try one more time before responding
+            if (!code) {
+                await delay(2000);
+                code = await sock.requestPairingCode(num);
+            }
+
+            const formattedCode = code?.match(/.{1,4}/g)?.join("-") || code;
             res.json({ code: formattedCode });
         }
 
     } catch (err) {
-        console.error("Critical Pairing Error:", err);
-        res.status(500).json({ error: "Server busy. Refresh your WhatsApp and try again." });
+        console.error("Pairing Error:", err);
+        res.status(500).json({ error: "WhatsApp is currently throttling requests. Try again in 1 minute." });
     } finally {
-        // Auto-cleanup stale sessions
+        // Cleanup temp files after 2 minutes
         setTimeout(() => {
-            if (fs.existsSync(tempDir)) fs.rmSync(tempDir, { recursive: true, force: true });
+            try {
+                if (fs.existsSync(tempDir)) fs.rmSync(tempDir, { recursive: true, force: true });
+            } catch (e) {}
         }, 120000);
     }
 });
 
-app.listen(PORT, () => console.log(`🚀 SΛVΛGΞ-PAIR REINFORCED ON PORT ${PORT}`));
+app.listen(PORT, () => console.log(`🚀 SΛVΛGΞ-PAIR REBOOTED ON PORT ${PORT}`));
