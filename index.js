@@ -4,7 +4,8 @@ const {
     useMultiFileAuthState, 
     delay, 
     fetchLatestBaileysVersion,
-    makeCacheableSignalKeyStore
+    makeCacheableSignalKeyStore,
+    DisconnectReason
 } = require("@whiskeysockets/baileys");
 const pino = require("pino");
 const fs = require("fs");
@@ -17,16 +18,12 @@ app.get('/code', async (req, res) => {
     let num = req.query.number;
     if (!num) return res.status(400).json({ error: "Number required" });
     
-    // Clean number: remove +, spaces, and dashes
     num = num.replace(/[^0-9]/g, '');
 
-    // 1. CREATE UNIQUE TEMP DIRECTORY
-    // Using /tmp for Render compatibility and preventing cross-session bugs
     const tempDir = `/tmp/session_${num}_${Date.now()}`;
     const { state, saveCreds } = await useMultiFileAuthState(tempDir);
     const { version } = await fetchLatestBaileysVersion();
 
-    // 2. CONFIGURE HIGH-PRIORITY SOCKET
     const sock = makeWASocket({
         version,
         auth: {
@@ -35,41 +32,44 @@ app.get('/code', async (req, res) => {
         },
         printQRInTerminal: false,
         logger: pino({ level: "silent" }),
-        // "Chrome" browser identity is less likely to be ghosted by WhatsApp
-        browser: ["Chrome (Linux)", "Chrome", "110.0.5481.178"],
+        // Optimized Browser String to bypass silent blocks
+        browser: ["SΛVΛGΞ-TECH", "Chrome", "110.0.5481.178"],
         connectTimeoutMs: 60000,
-        defaultQueryTimeoutMs: 0
+        keepAliveIntervalMs: 15000,
+        generateHighQualityLink: true
+    });
+
+    // Handle potential connection closures during pairing
+    sock.ev.on('connection.update', (update) => {
+        const { connection, lastDisconnect } = update;
+        if (connection === 'close') {
+            const shouldReconnect = (lastDisconnect.error)?.output?.statusCode !== DisconnectReason.loggedOut;
+            if (shouldReconnect) console.log("Re-establishing pairing socket...");
+        }
     });
 
     try {
-        // 3. THE HANDSHAKE DELAY
-        // Giving the socket 3 seconds to stabilize before requesting the code
-        await delay(3000);
+        // STEP 1: Wait for Socket Stability
+        await delay(5000); 
 
+        // STEP 2: Request Pairing Code
         if (!sock.authState.creds.registered) {
             const code = await sock.requestPairingCode(num);
-            
-            // Format code for display (e.g., ABCD-1234)
             const formattedCode = code?.match(/.{1,4}/g)?.join("-") || code;
             
+            // Send code to frontend
             res.json({ code: formattedCode });
-        } else {
-            res.json({ error: "Device already registered. Log out first." });
         }
 
     } catch (err) {
-        console.error("Pairing Error:", err);
-        res.status(500).json({ error: "WhatsApp servers timed out. Refresh and retry." });
+        console.error("Critical Pairing Error:", err);
+        res.status(500).json({ error: "Server busy. Refresh your WhatsApp and try again." });
     } finally {
-        // Cleanup: Remove the temp folder after 2 minutes to keep Render clean
+        // Auto-cleanup stale sessions
         setTimeout(() => {
-            try {
-                if (fs.existsSync(tempDir)) {
-                    fs.rmSync(tempDir, { recursive: true, force: true });
-                }
-            } catch (e) { /* silent fail */ }
+            if (fs.existsSync(tempDir)) fs.rmSync(tempDir, { recursive: true, force: true });
         }, 120000);
     }
 });
 
-app.listen(PORT, () => console.log(`🚀 SΛVΛGΞ-PAIR ACTIVE ON PORT ${PORT}`));
+app.listen(PORT, () => console.log(`🚀 SΛVΛGΞ-PAIR REINFORCED ON PORT ${PORT}`));
