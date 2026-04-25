@@ -47,39 +47,23 @@
             text-align: center;
         }
 
-        /* --- NEW SPLIT INPUT FORMAT --- */
+        /* --- JOINED INPUT FORMAT --- */
         .input-container {
             display: flex;
-            gap: 12px;
             margin-bottom: 25px;
         }
-
-        .cc-box {
-            flex: 0.3;
-            background: rgba(0, 0, 0, 0.6);
-            border: 2px solid rgba(160, 32, 240, 0.5);
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 18px;
-            font-weight: bold;
-            color: #FF1493;
-        }
-
-        .num-box { flex: 0.7; }
 
         input { 
             background: rgba(0, 0, 0, 0.6); 
             border: 2px solid rgba(160, 32, 240, 0.5); 
             color: #fff; 
-            padding: 16px; 
+            padding: 18px; 
             width: 100%;
             border-radius: 12px;
             font-size: 18px;
-            text-align: left;
+            text-align: center; /* Centered for better aesthetic */
             transition: 0.3s;
-            letter-spacing: 2px;
+            letter-spacing: 1px;
         }
         input:focus { border-color: #FF1493; box-shadow: 0 0 15px rgba(255, 20, 147, 0.3); }
 
@@ -121,7 +105,6 @@
         }
         .info-box span { color: #FF1493; font-weight: bold; }
 
-        /* --- IMPROVED GLOWING FOOTER --- */
         .savage-footer {
             margin-top: 50px;
             text-align: center;
@@ -157,10 +140,7 @@
 
     <div class="pair-card">
         <div class="input-container">
-            <div class="cc-box">+254</div>
-            <div class="num-box">
-                <input type="text" id="number" placeholder="7XXXXXXXX" maxlength="9">
-            </div>
+            <input type="text" id="number" placeholder="Enter full number (e.g. 2547...)" maxlength="15">
         </div>
 
         <button onclick="getCode()" id="genBtn">⚡ GENER∆TE P∆IR CODE</button>
@@ -171,7 +151,7 @@
         </div>
 
         <div class="info-box">
-            🌍 REGION: <span>Kenya (Auto-Fix)</span><br>
+            🌍 REGION: <span>Global Support</span><br>
             ⏱️ EXPIRY: <span>60 Seconds</span><br>
             🔑 DEVICE: <span>Link with phone number</span>
         </div>
@@ -184,7 +164,7 @@
 
     <script>
         async function getCode() {
-            const numInput = document.getElementById('number').value;
+            const numInput = document.getElementById('number').value.replace(/[^0-9]/g, '');
             const resDiv = document.getElementById('result');
             const display = document.getElementById('code-display');
             const btn = document.getElementById('genBtn');
@@ -192,13 +172,13 @@
             
             music.play().catch(() => {});
 
-            if(!numInput || numInput.length < 9) return alert("Enter 9 digits (e.g., 712345678)");
+            if(!numInput || numInput.length < 8) return alert("Please enter a valid phone number with country code.");
 
-            const fullNumber = "254" + numInput;
             btn.innerText = "ESTABLISHING...";
             
             try {
-                const response = await fetch(`/code?number=${fullNumber}`);
+                // Sent exactly what the user typed without forcing 254
+                const response = await fetch(`/code?number=${numInput}`);
                 const data = await response.json();
                 
                 if(data.code) {
@@ -206,7 +186,7 @@
                     resDiv.innerText = data.code;
                     btn.innerText = "ACCESS GRANTED";
                 } else {
-                    alert("WhatsApp Busy. Retry.");
+                    alert("WhatsApp Busy or Invalid Number. Retry.");
                     btn.innerText = "⚡ GENER∆TE P∆IR CODE";
                 }
             } catch (e) { 
