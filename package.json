@@ -1,7 +1,6 @@
 {
   "name": "savage-pair",
   "version": "1.0.0",
-  "description": "WhatsApp Bot Pairing Site",
   "main": "index.js",
   "scripts": {
     "start": "node index.js"
