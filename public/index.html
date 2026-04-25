@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SΛVΛGΞ-PAIRING</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body { 
+            background: linear-gradient(rgba(0, 0, 0, 0.75), rgba(0, 0, 0, 0.85)), 
+                        url('https://raw.githubusercontent.com/tysavage163/Savage-Pair/main/bg.png');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            color: #A020F0; 
+            font-family: 'Courier New', monospace; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center; 
+            min-height: 100vh; 
+            text-align: center;
+            padding: 20px;
+        }
+
+        .title { 
+            color: #FF1493; 
+            font-size: 28px; 
+            font-weight: bold; 
+            text-shadow: 0 0 15px #FF1493;
+            margin-bottom: 5px;
+        }
+
+        .sub-text { font-size: 12px; color: #fff; opacity: 0.7; margin-bottom: 20px; }
+
+        .steps-card {
+            background: rgba(255, 20, 147, 0.1);
+            border: 1px solid rgba(160, 32, 240, 0.3);
+            padding: 20px;
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+            max-width: 380px;
+            text-align: left;
+            margin-bottom: 30px;
+            color: #fff;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        .steps-card h3 { color: #FF1493; margin-bottom: 10px; font-size: 15px; text-transform: uppercase; }
+        
+        .typing-box {
+            height: 20px;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .important-note {
+            color: #FF1493;
+            font-weight: bold;
+            margin-bottom: 10px;
+            border-left: 3px solid #FF1493;
+            padding-left: 10px;
+        }
+
+        input { 
+            background: rgba(0, 0, 0, 0.6); 
+            border: 1px solid #A020F0; 
+            color: #fff; 
+            padding: 15px; 
+            width: 100%;
+            max-width: 320px; 
+            text-align: center; 
+            font-size: 18px;
+            outline: none;
+        }
+
+        button { 
+            background: #A020F0; 
+            color: #fff; 
+            border: none; 
+            padding: 15px 30px; 
+            margin-top: 15px; 
+            cursor: pointer; 
+            font-weight: bold; 
+            transition: 0.3s;
+            width: 100%;
+            max-width: 320px;
+        }
+
+        button:hover { background: #FF1493; box-shadow: 0 0 20px #FF1493; }
+
+        #result { 
+            margin-top: 30px; 
+            font-size: 32px; 
+            color: #FF1493; 
+            font-weight: bold; 
+            letter-spacing: 5px;
+        }
+
+        .footer { margin-top: 40px; font-size: 10px; opacity: 0.5; color: #fff; }
+    </style>
+</head>
+<body>
+
+    <audio id="bgMusic" loop>
+        <source src="https://raw.githubusercontent.com/tysavage163/Savage-Pair/main/song.m4a" type="audio/mp4">
+    </audio>
+
+    <div class="title">SΛVΛGΞ-PAIRING</div>
+    <div class="sub-text">Created with undivided attention</div>
+
+    <div class="steps-card">
+        <div class="typing-box">
+            <img src="https://readme-typing-svg.herokuapp.com?font=Courier+New&size=14&pause=1000&color=FF1493&center=true&vCenter=true&width=350&lines=CORE+SYSTEM+READY...;ESTABLISHING+WEBSOCKETS...;FORGED+IN+MACHINE+LOGIC...;SΛVΛGΞ+PROTOCOL+V1" />
+        </div>
+
+        <h3>Link Instructions</h3>
+        <p class="important-note">⚠️ START WITH 254 (e.g. 254712345678)</p>
+        <ol>
+            <li>Install and open WhatsApp</li>
+            <li>Tap “Agree & Continue”</li>
+            <li>On the number screen, tap the 3 dots (⋮)</li>
+            <li>Select “Link as companion device”</li>
+            <li>A QR code will appear (Ignore it)</li>
+            <li>Enter your 254 number below for the Code</li>
+        </ol>
+    </div>
+    
+    <input type="text" id="number" placeholder="254XXXXXXXXX">
+    <button onclick="getCode()">GENERATE PAIRING CODE</button>
+    
+    <div id="result"></div>
+
+    <div class="footer">
+        Developed by Spencer | Inspired by Meryl<br>
+        Westlands Root Authority
+    </div>
+
+    <script>
+        async function getCode() {
+            const num = document.getElementById('number').value;
+            const resDiv = document.getElementById('result');
+            const music = document.getElementById('bgMusic');
+            
+            // Starts music on interaction
+            music.play().catch(e => console.log("Audio waiting..."));
+
+            if(!num) return alert("Enter number starting with 254!");
+            if(!num.startsWith("254")) return alert("Error: Number must start with 254");
+
+            resDiv.innerText = "LINKING...";
+            
+            try {
+                const response = await fetch(`/code?number=${num}`);
+                const data = await response.json();
+                resDiv.innerText = data.code || "RETRY";
+            } catch (e) { 
+                resDiv.innerText = "ERROR"; 
+            }
+        }
+    </script>
+</body>
+</html>
