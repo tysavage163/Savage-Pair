@@ -1,6 +1,53 @@
 const express = require('express');
-const app = express();
+const { 
+    default: makeWASocket, 
+    useMultiFileAuthState, 
+    fetchLatestBaileysVersion,
+    makeCacheableSignalKeyStore,
+    DisconnectReason
+} = require("@whiskeysockets/baileys");
+const pino = require("pino");
+const fs = require("fs-extra");
+const path = require("path");
 
+const app = express();
+const PORT = process.env.PORT || 10000;
+
+let sock;
+
+async function startSavage() {
+    try {
+        const { state, saveCreds } = await useMultiFileAuthState('auth_info_baileys');
+        const { version } = await fetchLatestBaileysVersion();
+
+        sock = makeWASocket({
+            version,
+            auth: {
+                creds: state.creds,
+                keys: makeCacheableSignalKeyStore(state.keys, pino({ level: "fatal" }))
+            },
+            printQRInTerminal: false,
+            logger: pino({ level: "fatal" }),
+            browser: ["Ubuntu", "Chrome", "20.0.04"] 
+        });
+
+        sock.ev.on('creds.update', saveCreds);
+
+        sock.ev.on('connection.update', async (update) => {
+            const { connection, lastDisconnect } = update;
+            if (connection === 'close') {
+                const shouldReconnect = lastDisconnect?.error?.output?.statusCode !== DisconnectReason.loggedOut;
+                if (shouldReconnect) startSavage();
+            } else if (connection === 'open') {
+                console.log('⛓️ SΛVΛGΞ-TECH: SYSTEM ONLINE');
+            }
+        });
+    } catch (err) {
+        console.error("Bot Engine Error:", err);
+    }
+}
+
+// 🌐 THE FULL UI ROUTE (Restores background and song)
 app.get('/', (req, res) => {
     res.send(`
 <!DOCTYPE html>
@@ -8,41 +55,51 @@ app.get('/', (req, res) => {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SΛVΛGΞ TECH | QUANTUM</title>
+    <title>SΛVΛGΞ TECH | PAIRING</title>
     <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body { 
-            background: #000; background-image: url('https://i.ibb.co/Wpvd9P3T/0c64540aa36ae656a909f116f1b3851a.webp'); 
-            background-size: cover; color: #00f2ff; font-family: sans-serif;
-            display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh;
+            background: #0a000f;
+            background-image: linear-gradient(rgba(10, 0, 15, 0.7), rgba(20, 0, 30, 0.7)), 
+            url('https://raw.githubusercontent.com/tysavage163/Savage-Pair/main/bg.png');
+            background-size: cover; background-position: center; background-attachment: fixed;
+            color: #d88eff; font-family: 'Segoe UI', sans-serif;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            min-height: 100vh; padding: 20px;
         }
-        .card { background: rgba(0,0,0,0.8); padding: 30px; border-radius: 20px; border: 1px solid #00f2ff; text-align: center; backdrop-filter: blur(10px); }
-        .typing { color: #ff0055; margin-bottom: 20px; font-family: monospace; }
-        input { background: #111; border: 1px solid #00f2ff; color: #fff; padding: 15px; width: 100%; border-radius: 10px; margin-bottom: 20px; text-align: center; }
-        button { background: #00f2ff; color: #000; border: none; padding: 15px; width: 100%; border-radius: 10px; font-weight: bold; cursor: pointer; }
+        .pair-card {
+            background: rgba(15, 0, 25, 0.85); border: 1px solid #FF1493; border-radius: 24px;
+            width: 100%; max-width: 420px; padding: 40px 30px; backdrop-filter: blur(15px);
+            box-shadow: 0 0 30px rgba(255, 20, 147, 0.2); text-align: center;
+        }
+        .system-title { font-size: 32px; font-weight: 900; letter-spacing: 5px; color: #FF1493; text-shadow: 0 0 15px #FF1493; margin-bottom: 20px; }
+        input { background: rgba(0,0,0,0.6); border: 2px solid #FF1493; color: #fff; padding: 18px; width: 100%; border-radius: 12px; margin-bottom: 20px; text-align: center; font-size: 18px; }
+        button { background: linear-gradient(135deg, #A020F0 0%, #FF1493 100%); color: #fff; border: none; padding: 18px; width: 100%; border-radius: 12px; font-weight: 900; cursor: pointer; text-transform: uppercase; }
+        #result { margin-top: 25px; font-size: 35px; font-weight: 900; color: #fff; text-shadow: 0 0 20px #FF1493; letter-spacing: 8px; }
     </style>
 </head>
 <body>
-    <div class="card">
-        <h1>SΛVΛGΞ QUANTUM</h1>
-        <div class="typing" id="t"></div>
-        <input type="text" id="n" placeholder="254798841125">
-        <button onclick="f()">INITIALIZE PAIRING</button>
-        <p id="r" style="margin-top:20px; font-size: 24px; font-weight: bold;"></p>
-        <div style="margin-top: 20px; font-size: 10px; opacity: 0.5;">Inspired by Meryl</div>
+    <audio id="bgMusic" loop autoplay><source src="https://raw.githubusercontent.com/tysavage163/Savage-Pair/main/song.m4a" type="audio/mp4"></audio>
+    <div class="pair-card">
+        <h1 class="system-title">SΛVΛGΞ TECH</h1>
+        <input type="text" id="number" placeholder="254798841125">
+        <button onclick="getCode()" id="genBtn">⚡ GENER∆TE CODE</button>
+        <div id="result"></div>
+        <p style="margin-top: 20px; font-size: 12px; color: #fff; opacity: 0.5;">Inspired by Meryl</p>
     </div>
     <script>
-        const p = ["you connect...", "the system forgets...", "lose it..."];
-        let i = 0;
-        setInterval(() => { document.getElementById('t').innerText = p[i % p.length]; i++; }, 2000);
-
-        async function f() {
-            const n = document.getElementById('n').value;
-            document.getElementById('r').innerText = "ESTABLISHING...";
+        async function getCode() {
+            const num = document.getElementById('number').value;
+            const btn = document.getElementById('genBtn');
+            const res = document.getElementById('result');
+            if(!num) return alert("Enter number!");
+            btn.innerText = "CONNECTING...";
             try {
-                const res = await fetch('https://spencers-quantam-core.onrender.com/code?number=' + n);
-                const d = await res.json();
-                document.getElementById('r').innerText = d.code || "Error";
-            } catch { document.getElementById('r').innerText = "Render is Sleeping..."; }
+                const response = await fetch('/code?number=' + num);
+                const data = await response.json();
+                res.innerText = data.code || "TRY AGAIN";
+                btn.innerText = "⚡ GENER∆TE CODE";
+            } catch (e) { res.innerText = "ERROR"; btn.innerText = "⚡ GENER∆TE CODE"; }
         }
     </script>
 </body>
@@ -50,4 +107,21 @@ app.get('/', (req, res) => {
     `);
 });
 
-module.exports = app;
+// ⚡ BACKEND LOGIC
+app.get('/code', async (req, res) => {
+    let num = req.query.number;
+    if (!num) return res.status(400).json({ error: "Number required" });
+    num = num.replace(/[^0-9]/g, '');
+    try {
+        if (!sock) await startSavage();
+        const code = await sock.requestPairingCode(num);
+        res.status(200).json({ code: code });
+    } catch (err) {
+        res.status(500).json({ error: "Pairing failed" });
+    }
+});
+
+app.listen(PORT, () => {
+    console.log(`Server live on port ${PORT}`);
+    startSavage();
+});
