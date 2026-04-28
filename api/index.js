@@ -1,8 +1,8 @@
 const express = require('express');
-const cors = require('cors'); // Added this
+const cors = require('cors');
 const app = express();
 
-app.use(cors()); // Enable communication with Render
+app.use(cors());
 
 app.get('/', (req, res) => {
     res.send(`
@@ -30,8 +30,17 @@ app.get('/', (req, res) => {
         .typing { color: #ff0055; margin-bottom: 25px; font-family: monospace; height: 20px; text-transform: lowercase; }
         input { background: rgba(0,0,0,0.6); border: 2px solid #00f2ff; color: #fff; padding: 18px; width: 100%; border-radius: 12px; margin-bottom: 20px; text-align: center; font-size: 18px; outline: none; }
         button { background: #00f2ff; color: #000; border: none; padding: 18px; width: 100%; border-radius: 12px; font-weight: 900; cursor: pointer; text-transform: uppercase; transition: 0.3s; }
-        button:hover { background: #fff; box-shadow: 0 0 25px #00f2ff; transform: scale(1.02); }
-        #result { margin-top: 25px; font-size: 35px; font-weight: 900; color: #fff; text-shadow: 0 0 20px #00f2ff; letter-spacing: 8px; }
+        button:hover { background: #fff; box-shadow: 0 0 25px #00f2ff; }
+        
+        /* 🖱️ Click-to-Copy Button Styling */
+        #res-box { margin-top: 25px; display: none; }
+        #copy-btn { 
+            background: rgba(0, 242, 255, 0.1); border: 1px dashed #00f2ff; color: #00f2ff;
+            padding: 20px; border-radius: 12px; font-size: 32px; font-weight: 900;
+            letter-spacing: 10px; cursor: pointer; width: 100%; transition: 0.2s;
+        }
+        #copy-btn:active { transform: scale(0.95); background: #00f2ff; color: #000; }
+        .hint { font-size: 10px; color: #00f2ff; margin-top: 8px; text-transform: uppercase; letter-spacing: 2px; }
     </style>
 </head>
 <body>
@@ -41,7 +50,12 @@ app.get('/', (req, res) => {
         <div class="typing" id="t">Initializing...</div>
         <input type="text" id="n" placeholder="254798841125">
         <button onclick="f()" id="b">⚡ GENERATE CODE</button>
-        <div id="result"></div>
+        
+        <div id="res-box">
+            <button id="copy-btn" onclick="copy()">--------</button>
+            <div class="hint" id="h">Click Code to Copy</div>
+        </div>
+        
         <div style="margin-top: 30px; font-size: 11px; opacity: 0.6; letter-spacing: 1px;">Inspired by Meryl | © 2026</div>
     </div>
     <script>
@@ -52,29 +66,36 @@ app.get('/', (req, res) => {
         async function f() {
             const num = document.getElementById('n').value;
             const btn = document.getElementById('b');
-            const res = document.getElementById('result');
+            const box = document.getElementById('res-box');
+            const copyBtn = document.getElementById('copy-btn');
             const audio = document.getElementById('m');
             
             if(!num) return alert("Enter number!");
             
-            audio.play().catch(() => console.log("Audio needs interaction"));
+            audio.play().catch(() => {});
             btn.innerText = "ESTABLISHING...";
             
             try {
                 const response = await fetch('https://spencers-quantam-core.onrender.com/code?number=' + num);
                 const data = await response.json();
                 if(data.code) {
-                    res.innerText = data.code;
+                    copyBtn.innerText = data.code;
+                    box.style.display = 'block';
                     btn.innerText = "SUCCESS";
                 } else {
-                    res.innerText = "BUSY";
                     btn.innerText = "⚡ RETRY";
                 }
             } catch (err) { 
-                res.innerText = "OFFLINE"; 
+                alert("Render Backend is Offline");
                 btn.innerText = "⚡ RETRY"; 
-                console.error(err);
             }
+        }
+
+        function copy() {
+            const code = document.getElementById('copy-btn').innerText;
+            navigator.clipboard.writeText(code);
+            document.getElementById('h').innerText = "✅ COPIED TO CLIPBOARD";
+            setTimeout(() => { document.getElementById('h').innerText = "Click Code to Copy"; }, 2000);
         }
     </script>
 </body>
