@@ -1,6 +1,6 @@
 {
   "name": "savage-pair",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "SΛVΛGΞ-TECH Quantum Mirror",
   "main": "index.js",
   "scripts": {
@@ -13,7 +13,8 @@
     "express": "^4.18.2",
     "pino": "^8.19.0",
     "fs-extra": "^11.1.1",
-    "qrcode-terminal": "^0.12.0"
+    "qrcode-terminal": "^0.12.0",
+    "cors": "^2.8.5"
   },
   "engines": {
     "node": "20.x"
