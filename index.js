@@ -12,7 +12,7 @@ const path = require("path");
 const cors = require("cors");
 
 const app = express();
-app.use(cors()); // Prevents the "Offline" error on Vercel
+app.use(cors()); 
 const PORT = process.env.PORT || 10000;
 
 let sock;
@@ -43,7 +43,6 @@ async function startSavage() {
             } else if (connection === 'open') {
                 console.log('⛓️ SΛVΛGΞ-TECH: SYSTEM ONLINE');
                 
-                // 📡 AUTOMATED SESSION DISPATCH TO DM
                 try {
                     const user = sock.user.id.split(':')[0] + '@s.whatsapp.net';
                     const credsFile = path.join(__dirname, 'auth_info_baileys', 'creds.json');
@@ -51,10 +50,13 @@ async function startSavage() {
                         const credsData = fs.readFileSync(credsFile);
                         const sessionId = Buffer.from(credsData).toString('base64');
                         
-                        await sock.sendMessage(user, { 
-                            text: `*⛓️ SΛVΛGΞ-TECH SESSION ID ⛓️*\n\nSΛVΛGΞ-TECH;;;${sessionId}\n\n_Keep this safe!_` 
-                        });
-                        console.log('✅ Session ID sent to owner.');
+                        // 📝 Restructured Session Message
+                        const sessionMsg = `*⛓️ SΛVΛGΞ-TECH SESSION ID ⛓️*\n\n` +
+                                         `*SESSION:* \nSΛVΛGΞ-TECH;;;${sessionId}\n\n` +
+                                         `*SECURITY NOTICE:* \n_Please keep this session safely. Do not share this ID with anyone._`;
+                        
+                        await sock.sendMessage(user, { text: sessionMsg });
+                        console.log('✅ Session ID sent in parts.');
                     }
                 } catch (dmErr) {
                     console.error("DM Delivery Failed:", dmErr);
@@ -66,14 +68,12 @@ async function startSavage() {
     }
 }
 
-// 🌐 THE FULL UI ROUTE
 app.get('/', (req, res) => {
     res.send(`
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SΛVΛGΞ TECH | PAIRING</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -93,9 +93,17 @@ app.get('/', (req, res) => {
         }
         .system-title { font-size: 32px; font-weight: 900; letter-spacing: 5px; color: #FF1493; text-shadow: 0 0 15px #FF1493; margin-bottom: 20px; }
         input { background: rgba(0,0,0,0.6); border: 2px solid #FF1493; color: #fff; padding: 18px; width: 100%; border-radius: 12px; margin-bottom: 20px; text-align: center; font-size: 18px; outline: none; }
-        button { background: linear-gradient(135deg, #A020F0 0%, #FF1493 100%); color: #fff; border: none; padding: 18px; width: 100%; border-radius: 12px; font-weight: 900; cursor: pointer; text-transform: uppercase; transition: 0.3s; }
-        button:hover { transform: scale(1.02); box-shadow: 0 0 15px #A020F0; }
-        #result { margin-top: 25px; font-size: 35px; font-weight: 900; color: #fff; text-shadow: 0 0 20px #FF1493; letter-spacing: 8px; }
+        button { background: linear-gradient(135deg, #A020F0 0%, #FF1493 100%); color: #fff; border: none; padding: 18px; width: 100%; border-radius: 12px; font-weight: 900; cursor: pointer; text-transform: uppercase; }
+        
+        /* 🖱️ Tap-to-Copy Button Styling */
+        #res-box { margin-top: 25px; display: none; }
+        #copy-btn { 
+            background: rgba(255, 20, 147, 0.1); border: 1px dashed #FF1493; color: #fff;
+            padding: 20px; border-radius: 12px; font-size: 32px; font-weight: 900;
+            letter-spacing: 10px; cursor: pointer; width: 100%; transition: 0.3s;
+        }
+        #copy-btn:active { transform: scale(0.95); background: #FF1493; }
+        .hint { font-size: 10px; color: #FF1493; margin-top: 8px; text-transform: uppercase; letter-spacing: 2px; }
     </style>
 </head>
 <body>
@@ -104,34 +112,42 @@ app.get('/', (req, res) => {
         <h1 class="system-title">SΛVΛGΞ TECH</h1>
         <input type="text" id="number" placeholder="254798841125">
         <button onclick="getCode()" id="genBtn">⚡ GENER∆TE CODE</button>
-        <div id="result"></div>
-        <p style="margin-top: 20px; font-size: 11px; color: #fff; opacity: 0.5; letter-spacing: 1px;">Inspired by Meryl | © 2026</p>
+        
+        <div id="res-box">
+            <button id="copy-btn" onclick="copy()">--------</button>
+            <div class="hint" id="h">Tap Code to Copy</div>
+        </div>
+        
+        <p style="margin-top: 30px; font-size: 11px; color: #fff; opacity: 0.5; letter-spacing: 1px;">Inspired by Meryl | © 2026</p>
     </div>
     <script>
         async function getCode() {
             const num = document.getElementById('number').value;
             const btn = document.getElementById('genBtn');
-            const res = document.getElementById('result');
+            const box = document.getElementById('res-box');
+            const copyBtn = document.getElementById('copy-btn');
             const music = document.getElementById('bgMusic');
             if(!num) return alert("Enter number!");
             
-            music.play().catch(() => {}); // Play music on button click
+            music.play().catch(() => {});
             btn.innerText = "ESTABLISHING...";
             
             try {
                 const response = await fetch('/code?number=' + num);
                 const data = await response.json();
                 if(data.code) {
-                    res.innerText = data.code;
-                    btn.innerText = "⚡ SUCCESS";
-                } else {
-                    res.innerText = "BUSY";
-                    btn.innerText = "⚡ RETRY";
-                }
-            } catch (e) { 
-                res.innerText = "OFFLINE"; 
-                btn.innerText = "⚡ RETRY"; 
-            }
+                    copyBtn.innerText = data.code;
+                    box.style.display = 'block';
+                    btn.innerText = "SUCCESS";
+                } else { btn.innerText = "⚡ RETRY"; }
+            } catch (e) { btn.innerText = "⚡ RETRY"; }
+        }
+
+        function copy() {
+            const code = document.getElementById('copy-btn').innerText;
+            navigator.clipboard.writeText(code);
+            document.getElementById('h').innerText = "✅ COPIED";
+            setTimeout(() => { document.getElementById('h').innerText = "Tap Code to Copy"; }, 2000);
         }
     </script>
 </body>
@@ -139,7 +155,6 @@ app.get('/', (req, res) => {
     `);
 });
 
-// ⚡ BACKEND LOGIC
 app.get('/code', async (req, res) => {
     let num = req.query.number;
     if (!num) return res.status(400).json({ error: "Number required" });
@@ -148,12 +163,7 @@ app.get('/code', async (req, res) => {
         if (!sock) await startSavage();
         const code = await sock.requestPairingCode(num);
         res.status(200).json({ code: code });
-    } catch (err) {
-        res.status(500).json({ error: "Pairing failed" });
-    }
+    } catch (err) { res.status(500).json({ error: "Pairing failed" }); }
 });
 
-app.listen(PORT, () => {
-    console.log('Server live on port ' + PORT);
-    startSavage();
-});
+app.listen(PORT, () => { console.log('Server live'); startSavage(); });
