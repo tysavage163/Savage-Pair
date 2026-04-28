@@ -1,11 +1,11 @@
 {
-  "name": "savage-pair-render",
+  "name": "savage-pair",
   "version": "1.0.0",
-  "description": "SΛVΛGΞ-TECH Pairing for Render",
+  "description": "SΛVΛGΞ-TECH Quantum Mirror",
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
-    "build": "npm install"
+    "build": "echo 'Build complete'"
   },
   "dependencies": {
     "@whiskeysockets/baileys": "^6.6.0",
