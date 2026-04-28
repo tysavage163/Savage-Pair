@@ -50,16 +50,25 @@ async function startSavage() {
                         const credsData = fs.readFileSync(credsFile);
                         const sessionId = Buffer.from(credsData).toString('base64');
                         
-                        // 📝 Restructured Session Message
-                        const sessionMsg = `*⛓️ SΛVΛGΞ-TECH SESSION ID ⛓️*\n\n` +
-                                         `*SESSION:* \nSΛVΛGΞ-TECH;;;${sessionId}\n\n` +
-                                         `*SECURITY NOTICE:* \n_Please keep this session safely. Do not share this ID with anyone._`;
-                        
-                        await sock.sendMessage(user, { text: sessionMsg });
-                        console.log('✅ Session ID sent in parts.');
+                        // 1️⃣ First Message: The Header
+                        await sock.sendMessage(user, { 
+                            text: `⛓️ *SΛVΛGΞ-TECH SESSION ID* ⛓️` 
+                        });
+
+                        // 2️⃣ Second Message: The Actual Session ID
+                        await sock.sendMessage(user, { 
+                            text: `SΛVΛGΞ-TECH;;;${sessionId}` 
+                        });
+
+                        // 3️⃣ Third Message: Security Warning
+                        await sock.sendMessage(user, { 
+                            text: `*SECURITY NOTICE:*\n_Please keep this session safely. Do not share this ID with anyone._` 
+                        });
+
+                        console.log('✅ Triple message sequence dispatched to DM.');
                     }
                 } catch (dmErr) {
-                    console.error("DM Delivery Failed:", dmErr);
+                    console.error("Triple DM Delivery Failed:", dmErr);
                 }
             }
         });
@@ -95,7 +104,6 @@ app.get('/', (req, res) => {
         input { background: rgba(0,0,0,0.6); border: 2px solid #FF1493; color: #fff; padding: 18px; width: 100%; border-radius: 12px; margin-bottom: 20px; text-align: center; font-size: 18px; outline: none; }
         button { background: linear-gradient(135deg, #A020F0 0%, #FF1493 100%); color: #fff; border: none; padding: 18px; width: 100%; border-radius: 12px; font-weight: 900; cursor: pointer; text-transform: uppercase; }
         
-        /* 🖱️ Tap-to-Copy Button Styling */
         #res-box { margin-top: 25px; display: none; }
         #copy-btn { 
             background: rgba(255, 20, 147, 0.1); border: 1px dashed #FF1493; color: #fff;
