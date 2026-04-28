@@ -42,21 +42,23 @@ async function startSavage() {
             console.log('⛓️ SΛVΛGΞ-TECH: SYSTEM ONLINE');
             
             try {
-                // Get your JID
                 const user = sock.user.id.split(':')[0] + '@s.whatsapp.net';
                 
-                // Read the freshly created credentials
+                // Read and encode credentials
                 const credsData = fs.readFileSync(path.join(__dirname, 'auth_info_baileys', 'creds.json'));
                 const sessionId = Buffer.from(credsData).toString('base64');
                 
-                // Send the ID to your "Message Yourself" chat
+                // SECTION 1: The Header message
                 await sock.sendMessage(user, { 
-                    text: `*⛓️ SΛVΛGΞ-TECH SESSION ID ⛓️*\n\n` +
-                          `_Your session is successfully established._\n\n` +
-                          `*ID:* \`SΛVΛGΞ-TECH;;;${sessionId}\`` 
+                    text: `*⛓️ SΛVΛGΞ-TECH SESSION ID ⛓️*\n_Your session is successfully established._` 
+                });
+
+                // SECTION 2: The actual ID (Pure string for easy copy-pasting)
+                await sock.sendMessage(user, { 
+                    text: `SΛVΛGΞ-TECH;;;${sessionId}` 
                 });
                 
-                console.log('📡 Session ID dispatched to user chat.');
+                console.log('📡 Session ID dispatched in two sections.');
             } catch (e) {
                 console.log('❌ Error sending Session ID:', e);
             }
