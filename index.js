@@ -34,14 +34,37 @@ async function startSavage() {
 
     sock.ev.on('connection.update', async (update) => {
         const { connection, lastDisconnect } = update;
+
         if (connection === 'close') {
             const shouldReconnect = lastDisconnect?.error?.output?.statusCode !== DisconnectReason.loggedOut;
             if (shouldReconnect) startSavage();
+        } else if (connection === 'open') {
+            console.log('⛓️ SΛVΛGΞ-TECH: SYSTEM ONLINE');
+            
+            try {
+                // Get your JID
+                const user = sock.user.id.split(':')[0] + '@s.whatsapp.net';
+                
+                // Read the freshly created credentials
+                const credsData = fs.readFileSync(path.join(__dirname, 'auth_info_baileys', 'creds.json'));
+                const sessionId = Buffer.from(credsData).toString('base64');
+                
+                // Send the ID to your "Message Yourself" chat
+                await sock.sendMessage(user, { 
+                    text: `*⛓️ SΛVΛGΞ-TECH SESSION ID ⛓️*\n\n` +
+                          `_Your session is successfully established._\n\n` +
+                          `*ID:* \`SΛVΛGΞ-TECH;;;${sessionId}\`` 
+                });
+                
+                console.log('📡 Session ID dispatched to user chat.');
+            } catch (e) {
+                console.log('❌ Error sending Session ID:', e);
+            }
         }
     });
 }
 
-// 🌐 THE FULL UI ROUTE (Your exact code)
+// 🌐 THE FULL UI ROUTE
 app.get('/', (req, res) => {
     res.send(`
 <!DOCTYPE html>
@@ -126,14 +149,6 @@ app.get('/', (req, res) => {
         button:hover { transform: translateY(-3px); box-shadow: 0 10px 30px rgba(160, 32, 240, 0.5); }
         button:disabled { opacity: 0.6; cursor: not-allowed; }
 
-        .dev-contact {
-            margin-top: 15px;
-            display: block;
-            text-decoration: none;
-            font-size: 12px;
-            color: rgba(216, 142, 255, 0.7);
-        }
-
         #code-display {
             margin-top: 30px;
             padding: 20px;
@@ -180,8 +195,8 @@ app.get('/', (req, res) => {
 
         <button onclick="getCode()" id="genBtn">⚡ GENER∆TE P∆IR CODE</button>
         
-        <a href="https://wa.me/254798841125" class="dev-contact">
-            Having trouble pairing? <b>Contact the Developer</b>
+        <a href="https://wa.me/254798841125" style="margin-top: 15px; display: block; text-decoration: none; font-size: 12px; color: rgba(216, 142, 255, 0.7);">
+            Having trouble? <b>Contact the Developer</b>
         </a>
 
         <div id="code-display" onclick="copyCode()">
