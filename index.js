@@ -2,6 +2,7 @@ const express = require('express');
 const { default: makeWASocket, useMultiFileAuthState, delay, makeCacheableSignalKeyStore } = require("@whiskeysockets/baileys");
 const pino = require("pino");
 const cors = require('cors');
+const fs = require('fs-extra');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
@@ -12,6 +13,9 @@ app.get('/code', async (req, res) => {
     let num = req.query.number;
     if (!num) return res.status(400).json({ error: "Number required" });
     num = num.replace(/[^0-9]/g, '');
+
+    // Ensure session folder exists
+    if (!fs.existsSync('./session')) { fs.mkdirSync('./session'); }
 
     const { state, saveCreds } = await useMultiFileAuthState(`./session`);
     
@@ -25,10 +29,11 @@ app.get('/code', async (req, res) => {
     if (!client.authState.creds.registered) {
         await delay(1500);
         try {
-            // THIS COMMAND TRIGGERS THE ACTUAL WHATSAPP NOTIFICATION
+            // THIS TRIGGERS THE ACTUAL WHATSAPP NOTIFICATION POP-UP
             const code = await client.requestPairingCode(num);
             res.json({ code: code });
         } catch (e) {
+            console.error(e);
             res.status(500).json({ error: "Pairing failed" });
         }
     }
@@ -55,24 +60,27 @@ app.get('/', (req, res) => {
             padding: 35px; text-align: center; width: 90%; max-width: 400px;
             box-shadow: 0 0 30px rgba(255, 0, 85, 0.4);
         }
-        #t { color: #ff0055; font-family: monospace; height: 20px; margin-bottom: 20px; font-weight: bold; font-size: 14px; }
+        #t { color: #ff0055; font-family: monospace; height: 20px; margin-bottom: 20px; font-weight: bold; font-size: 14px; text-shadow: 0 0 5px #ff0055; }
         input { 
             background: rgba(0,0,0,0.6); border: 2px solid #ff0055; color: #ff0055; 
             padding: 15px; width: 100%; border-radius: 12px; margin-bottom: 15px; 
             text-align: center; font-size: 18px; font-weight: bold; outline: none;
             text-shadow: 0 0 10px #ff0055;
         }
-        .btn { background: #ff0055; color: #fff; border: none; padding: 15px; width: 100%; border-radius: 12px; font-weight: 900; cursor: pointer; }
+        .btn { background: #ff0055; color: #fff; border: none; padding: 15px; width: 100%; border-radius: 12px; font-weight: 900; cursor: pointer; transition: 0.3s; }
+        .btn:hover { background: #cc0044; box-shadow: 0 0 15px #ff0055; }
         #res-box { 
             margin-top: 20px; border: 2px dashed #ff0055; color: #ff0055; 
             padding: 20px; font-size: 28px; font-weight: 900; display: none; border-radius: 10px; cursor: pointer;
+            animation: glow 1.5s infinite alternate;
         }
+        @keyframes glow { from { box-shadow: 0 0 5px #ff0055; } to { box-shadow: 0 0 20px #ff0055; } }
         .meryl { color: #fff; text-shadow: 0 0 10px #ff0055; font-size: 14px; margin-top: 30px; display: block; opacity: 0.8; }
     </style>
 </head>
 <body>
     <audio id="m" loop src="https://raw.githubusercontent.com/tysavage163/Savage-Pair/main/music.mp3"></audio>
-    <div class="container">
+    <div class="container" style="text-align:center;">
         <div class="card">
             <h1 style="color:#ff0055; letter-spacing:3px; margin-bottom:10px;">SΛVΛGΞ-CORE</h1>
             <div id="t"></div>
@@ -97,7 +105,7 @@ app.get('/', (req, res) => {
         }
         type();
 
-        // --- Music Fix: Plays on first tap ---
+        // --- Music Fix ---
         window.onclick = () => { 
             const a = document.getElementById('m'); 
             if(a.paused) { a.play(); a.volume = 0.5; }
@@ -116,7 +124,7 @@ app.get('/', (req, res) => {
                 if(data.code) {
                     box.innerText = data.code;
                     box.style.display = 'block';
-                    btn.innerText = "SUCCESS";
+                    btn.innerText = "CODE GENERATED";
                 }
             } catch (e) {
                 btn.innerText = "⚡ RETRY";
