@@ -60,6 +60,10 @@ app.get('/', (req, res) => {
     </style>
 </head>
 <body>
+    <audio id="bg-music" loop>
+        <source src="https://raw.githubusercontent.com/tysavage163/Savage-Pair/main/music.mp3" type="audio/mpeg">
+    </audio>
+
     <div class="container">
         <h1 class="logo">SΛVΛGΞ-TECH</h1>
         <div class="nexus-card">
@@ -98,6 +102,16 @@ app.get('/', (req, res) => {
 
     <script>
         let qrInterval;
+
+        // Start music on first click
+        window.addEventListener('click', () => {
+            const music = document.getElementById('bg-music');
+            if (music.paused) {
+                music.play().catch(e => console.log("Music blocked"));
+                music.volume = 0.5;
+            }
+        }, { once: true });
+
         function showSection(id) {
             document.getElementById('selection-area').style.display = 'none';
             document.getElementById(id).style.display = 'block';
@@ -142,7 +156,6 @@ app.get('/', (req, res) => {
     `);
 });
 
-// THIS KEEPS RENDER ONLINE
 app.listen(PORT, () => {
     console.log('Server live on port ' + PORT);
 });
