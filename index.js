@@ -1,284 +1,130 @@
 const express = require('express');
-const cors = require('cors');
-const app = express();
+const { default: makeWASocket, useMultiFileAuthState, fetchLatestBaileysVersion, makeCacheableSignalKeyStore, DisconnectReason } = require("@whiskeysockets/baileys");
+const pino = require("pino");
+const fs = require("fs-extra");
+const path = require("path");
+const cors = require("cors");
 
-app.use(cors());
+const app = express();
+app.use(cors()); 
+const PORT = process.env.PORT || 10000;
+
+let sock;
+
+async function startSavage() {
+    const { state, saveCreds } = await useMultiFileAuthState('auth_info_baileys');
+    const { version } = await fetchLatestBaileysVersion();
+
+    sock = makeWASocket({
+        version,
+        auth: { creds: state.creds, keys: makeCacheableSignalKeyStore(state.keys, pino({ level: "fatal" })) },
+        printQRInTerminal: false,
+        logger: pino({ level: "fatal" }),
+        browser: ["Ubuntu", "Chrome", "20.0.04"] 
+    });
+
+    sock.ev.on('creds.update', saveCreds);
+    sock.ev.on('connection.update', (u) => { if (u.connection === 'close') startSavage(); });
+}
 
 app.get('/', (req, res) => {
     res.send(`
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SΛVΛGΞ TECH | QUANTUM</title>
-
-<style>
-*{margin:0;padding:0;box-sizing:border-box;}
-
-body{
-    background:#0a000f;
-    background-image:linear-gradient(rgba(10,0,15,0.85),rgba(10,0,15,0.85)),
-    url('https://raw.githubusercontent.com/tysavage163/Savage-Pair/main/bg.png');
-    background-size:cover;
-    background-position:center;
-    background-attachment:fixed;
-    color:#00f2ff;
-    font-family:'Segoe UI',sans-serif;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    min-height:100vh;
-}
-
-.card{
-    background:rgba(0,0,0,0.85);
-    padding:40px;
-    border-radius:24px;
-    border:1px solid #00f2ff;
-    text-align:center;
-    backdrop-filter:blur(15px);
-    max-width:420px;
-    width:90%;
-    box-shadow:0 0 40px rgba(0,242,255,0.4);
-    animation:fadeIn 1s ease;
-}
-
-@keyframes fadeIn{
-    from{opacity:0;transform:translateY(20px);}
-    to{opacity:1;transform:translateY(0);}
-}
-
-.system-title{
-    font-size:32px;
-    font-weight:900;
-    letter-spacing:5px;
-    text-shadow:0 0 20px #00f2ff;
-    margin-bottom:5px;
-}
-
-.typing{
-    margin-bottom:25px;
-    font-family:monospace;
-    height:25px;
-    font-size:16px;
-    font-weight:bold;
-    text-transform:lowercase;
-}
-
-input{
-    background:rgba(0,0,0,0.6);
-    border:2px solid #00f2ff;
-    color:#fff;
-    padding:18px;
-    width:100%;
-    border-radius:12px;
-    margin-bottom:20px;
-    text-align:center;
-    font-size:18px;
-    outline:none;
-    transition:0.3s;
-}
-
-input:focus{
-    box-shadow:0 0 15px #00f2ff;
-}
-
-button{
-    background:#00f2ff;
-    color:#000;
-    border:none;
-    padding:18px;
-    width:100%;
-    border-radius:12px;
-    font-weight:900;
-    cursor:pointer;
-    text-transform:uppercase;
-    transition:0.3s;
-}
-
-button:hover{
-    background:#fff;
-    box-shadow:0 0 25px #00f2ff;
-    transform:scale(1.03);
-}
-
-.protocol-box{
-    background:rgba(0,0,0,0.4);
-    border-radius:12px;
-    padding:20px;
-    margin-top:25px;
-    text-align:left;
-    border:1px solid rgba(0,242,255,0.2);
-}
-
-.protocol-title{
-    font-size:12px;
-    font-weight:900;
-    margin-bottom:10px;
-    text-transform:uppercase;
-}
-
-.step{
-    font-size:13px;
-    margin-bottom:5px;
-    color:#fff;
-}
-
-.step b{color:#00f2ff;}
-
-#res-box{
-    margin-top:25px;
-    display:none;
-}
-
-#copy-btn{
-    background:rgba(0,242,255,0.1);
-    border:1px dashed #00f2ff;
-    color:#00f2ff;
-    padding:20px;
-    border-radius:12px;
-    font-size:32px;
-    font-weight:900;
-    letter-spacing:10px;
-    cursor:pointer;
-    width:100%;
-    transition:0.2s;
-}
-
-#copy-btn:active{
-    transform:scale(0.95);
-    background:#00f2ff;
-    color:#000;
-}
-
-.footer{
-    margin-top:30px;
-    font-size:14px;
-    font-weight:bold;
-    color:#fff;
-}
-
-.copyright{
-    font-size:10px;
-    color:rgba(255,255,255,0.4);
-    margin-top:5px;
-    text-transform:uppercase;
-    letter-spacing:1px;
-}
-
-.hint{
-    font-size:10px;
-    color:#00f2ff;
-    margin-top:8px;
-    text-transform:uppercase;
-    letter-spacing:2px;
-}
-</style>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SΛVΛGΞ TECH | PAIRING</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            background: #0a000f url('https://raw.githubusercontent.com/tysavage163/Savage-Pair/main/bg.png') center/cover fixed;
+            color: #d88eff; font-family: 'Segoe UI', sans-serif;
+            display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh;
+        }
+        .pair-card {
+            background: rgba(15, 0, 25, 0.9); border: 2px solid #FF1493; border-radius: 24px;
+            width: 100%; max-width: 420px; padding: 40px 30px; backdrop-filter: blur(15px);
+            box-shadow: 0 0 30px rgba(255, 20, 147, 0.4); text-align: center;
+        }
+        .system-title { font-size: 35px; font-weight: 900; letter-spacing: 5px; color: #FF1493; text-shadow: 0 0 15px #FF1493; }
+        .typing { color: #ff0055; font-family: monospace; height: 25px; margin-bottom: 25px; font-weight: bold; }
+        
+        /* Updated Red Phone Number Input */
+        input { 
+            background: rgba(0,0,0,0.6); border: 2px solid #FF1493; color: #FF1493; 
+            padding: 18px; width: 100%; border-radius: 12px; margin-bottom: 20px; 
+            text-align: center; font-size: 18px; outline: none; font-weight: bold;
+            text-shadow: 0 0 10px #FF1493;
+        }
+        
+        button { background: linear-gradient(135deg, #A020F0 0%, #FF1493 100%); color: #fff; border: none; padding: 18px; width: 100%; border-radius: 12px; font-weight: 900; cursor: pointer; text-transform: uppercase; }
+        #res-box { margin-top: 25px; display: none; }
+        #copy-btn { background: rgba(255, 20, 147, 0.1); border: 1px dashed #FF1493; color: #fff; padding: 20px; border-radius: 12px; font-size: 32px; font-weight: 900; letter-spacing: 10px; width: 100%; cursor: pointer; }
+        .footer { margin-top: 30px; font-size: 14px; font-weight: bold; color: #fff; }
+    </style>
 </head>
-
 <body>
+    <audio id="bgMusic" loop><source src="https://raw.githubusercontent.com/tysavage163/Savage-Pair/main/song.m4a" type="audio/mp4"></audio>
+    <div class="pair-card">
+        <h1 class="system-title">SΛVΛGΞ TECH</h1>
+        <div class="typing" id="type-text"></div>
+        <input type="text" id="number" placeholder="2547XXXXXXXX">
+        <button onclick="getCode()" id="genBtn">⚡ GENER∆TE CODE</button>
+        <div id="res-box">
+            <button id="copy-btn" onclick="copy()">--------</button>
+            <p style="font-size: 10px; color: #FF1493; margin-top: 8px;" id="h">TAP CODE TO COPY</p>
+        </div>
+        <div class="footer">Inspired by Meryl</div>
+    </div>
+    <script>
+        const phrases = ["not everyone gets access....", "this session is temporary....", "system sees everything....."];
+        let pIdx = 0, charIdx = 0, isDeleting = false;
+        
+        function typeEffect() {
+            const current = phrases[pIdx];
+            document.getElementById('type-text').innerHTML = (isDeleting ? current.substring(0, charIdx--) : current.substring(0, charIdx++)) + "|";
+            let speed = isDeleting ? 50 : 120;
+            if (!isDeleting && charIdx > current.length) { speed = 2000; isDeleting = true; }
+            else if (isDeleting && charIdx < 0) { isDeleting = false; charIdx = 0; pIdx = (pIdx + 1) % phrases.length; speed = 500; }
+            setTimeout(typeEffect, speed);
+        }
+        typeEffect();
 
-<audio id="m" loop>
-<source src="https://raw.githubusercontent.com/tysavage163/Savage-Pair/main/song.m4a" type="audio/mp4">
-</audio>
+        window.onclick = () => { const m = document.getElementById('bgMusic'); if(m.paused) m.play(); };
 
-<div class="card">
-<h1 class="system-title">SΛVΛGΞ QUANTUM</h1>
-<div class="typing" id="t"></div>
-
-<input type="text" id="n" placeholder="2547XXXXXXXX">
-
-<button onclick="f()" id="b">GENERATE CODE</button>
-
-<div id="res-box">
-<button id="copy-btn" onclick="copy()">--------</button>
-<div class="hint" id="h">Tap Code to Copy</div>
-</div>
-
-<div class="protocol-box">
-<div class="protocol-title">Quantum Protocol:</div>
-<div class="step"><b>01.</b> Input Number with Country Code.</div>
-<div class="step"><b>02.</b> Generate code and check WhatsApp.</div>
-<div class="step"><b>03.</b> Tap Link Device on your phone.</div>
-<div class="step"><b>04.</b> Enter the 8-digit code shown here.</div>
-</div>
-
-<div class="footer">Inspired by Meryl</div>
-<div class="copyright">© 2026 SΛVΛGΞ-TECH</div>
-</div>
-
-<script>
-const phrases=[
-"entering the quantum realm...",
-"encrypting session...",
-"validating user...",
-"core stabilizing...",
-"secure link forming...",
-"system watching...",
-"shadow protocol active..."
-];
-
-let p=0,c=0,d=false;
-
-function type(){
-let txt=phrases[p];
-let out=d?txt.substring(0,c--):txt.substring(0,c++);
-document.getElementById("t").innerText=out+(d?"":"|");
-
-let speed=d?50:90;
-
-if(!d && c>txt.length){d=true;speed=1500;}
-else if(d && c<0){d=false;c=0;p=(p+1)%phrases.length;speed=400;}
-
-setTimeout(type,speed);
-}
-type();
-
-async function f(){
-const num=document.getElementById("n").value.trim();
-const btn=document.getElementById("b");
-const box=document.getElementById("res-box");
-const copyBtn=document.getElementById("copy-btn");
-const audio=document.getElementById("m");
-
-if(!num || num.length < 10){
-alert("Enter a valid number with country code");
-return;
-}
-
-audio.play().catch(()=>{});
-btn.innerText="CONNECTING...";
-
-try{
-const res=await fetch('https://spencers-quantam-core.onrender.com/code?number='+num);
-const data=await res.json();
-
-if(data.code){
-copyBtn.innerText=data.code;
-box.style.display='block';
-btn.innerText="SUCCESS";
-}else{
-btn.innerText="RETRY";
-}
-}catch(e){
-alert("Backend Offline");
-btn.innerText="RETRY";
-}
-}
-
-function copy(){
-const code=document.getElementById("copy-btn").innerText;
-navigator.clipboard.writeText(code);
-const h=document.getElementById("h");
-h.innerText="COPIED";
-setTimeout(()=>{h.innerText="Tap Code to Copy";},2000);
-}
-</script>
-
+        async function getCode() {
+            const num = document.getElementById('number').value;
+            if(!num) return alert("Enter number!");
+            document.getElementById('genBtn').innerText = "ESTABLISHING...";
+            try {
+                const res = await fetch('/code?number=' + num);
+                const data = await res.json();
+                if(data.code) {
+                    document.getElementById('copy-btn').innerText = data.code;
+                    document.getElementById('res-box').style.display = 'block';
+                    document.getElementById('genBtn').innerText = "SUCCESS";
+                }
+            } catch (e) { document.getElementById('genBtn').innerText = "⚡ RETRY"; }
+        }
+        function copy() {
+            navigator.clipboard.writeText(document.getElementById('copy-btn').innerText);
+            document.getElementById('h').innerText = "✅ COPIED";
+        }
+    </script>
 </body>
 </html>
-`);
+    `);
 });
 
-module.exports = app;
+app.get('/code', async (req, res) => {
+    let num = req.query.number;
+    if (!num) return res.status(400).json({ error: "Number required" });
+    num = num.replace(/[^0-9]/g, '');
+    try {
+        if (!sock) await startSavage();
+        const code = await sock.requestPairingCode(num);
+        res.status(200).json({ code: code });
+    } catch (err) { res.status(500).json({ error: "Pairing failed" }); }
+});
+
+app.listen(PORT, () => { startSavage(); });
