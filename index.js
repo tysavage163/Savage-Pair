@@ -7,7 +7,7 @@ const PORT = process.env.PORT || 3000;
 
 app.use(cors());
 
-// --- WHATSAPP PAIRING LOGIC ---
+// --- REAL WHATSAPP PAIRING LOGIC ---
 app.get('/code', async (req, res) => {
     let num = req.query.number;
     if (!num) return res.status(400).json({ error: "Number required" });
@@ -25,7 +25,7 @@ app.get('/code', async (req, res) => {
     if (!client.authState.creds.registered) {
         await delay(1500);
         try {
-            // THIS TRIGGERS THE WHATSAPP NOTIFICATION POP-UP
+            // THIS COMMAND TRIGGERS THE ACTUAL WHATSAPP NOTIFICATION
             const code = await client.requestPairingCode(num);
             res.json({ code: code });
         } catch (e) {
@@ -35,7 +35,7 @@ app.get('/code', async (req, res) => {
     client.ev.on('creds.update', saveCreds);
 });
 
-// --- FRONTEND UI (RED THEME) ---
+// --- FRONTEND UI (RED THEME + MUSIC + TYPING) ---
 app.get('/', (req, res) => {
     res.send(`
 <!DOCTYPE html>
@@ -55,7 +55,7 @@ app.get('/', (req, res) => {
             padding: 35px; text-align: center; width: 90%; max-width: 400px;
             box-shadow: 0 0 30px rgba(255, 0, 85, 0.4);
         }
-        #t { color: #ff0055; font-family: monospace; height: 20px; margin-bottom: 20px; font-weight: bold; }
+        #t { color: #ff0055; font-family: monospace; height: 20px; margin-bottom: 20px; font-weight: bold; font-size: 14px; }
         input { 
             background: rgba(0,0,0,0.6); border: 2px solid #ff0055; color: #ff0055; 
             padding: 15px; width: 100%; border-radius: 12px; margin-bottom: 15px; 
@@ -65,35 +65,43 @@ app.get('/', (req, res) => {
         .btn { background: #ff0055; color: #fff; border: none; padding: 15px; width: 100%; border-radius: 12px; font-weight: 900; cursor: pointer; }
         #res-box { 
             margin-top: 20px; border: 2px dashed #ff0055; color: #ff0055; 
-            padding: 20px; font-size: 28px; font-weight: 900; display: none; border-radius: 10px;
+            padding: 20px; font-size: 28px; font-weight: 900; display: none; border-radius: 10px; cursor: pointer;
         }
+        .meryl { color: #fff; text-shadow: 0 0 10px #ff0055; font-size: 14px; margin-top: 30px; display: block; opacity: 0.8; }
     </style>
 </head>
 <body>
     <audio id="m" loop src="https://raw.githubusercontent.com/tysavage163/Savage-Pair/main/music.mp3"></audio>
-    <div class="card">
-        <h1 style="color:#ff0055; letter-spacing:3px; margin-bottom:10px;">SΛVΛGΞ-CORE</h1>
-        <div id="t"></div>
-        <input type="text" id="n" placeholder="2547XXXXXXXX">
-        <button class="btn" id="gb" onclick="pair()">⚡ GENERATE PAIRING CODE</button>
-        <div id="res-box" onclick="copy()"></div>
+    <div class="container">
+        <div class="card">
+            <h1 style="color:#ff0055; letter-spacing:3px; margin-bottom:10px;">SΛVΛGΞ-CORE</h1>
+            <div id="t"></div>
+            <input type="text" id="n" placeholder="2547XXXXXXXX">
+            <button class="btn" id="gb" onclick="pair()">⚡ GENERATE PAIRING CODE</button>
+            <div id="res-box" onclick="copy()"></div>
+        </div>
+        <span class="meryl">Inspired by Meryl</span>
     </div>
 
     <script>
-        // Typing Effect
-        const txt = ["ESTABLISHING CONNECTION...", "BYPASSING FIREWALL...", "CORE OPERATIONAL."];
-        let i=0, j=0, d=false;
+        // --- Typing & Erasing Logic ---
+        const phrases = ["ESTABLISHING CONNECTION...", "BYPASSING FIREWALL...", "CORE OPERATIONAL."];
+        let p=0, c=0, d=false;
         function type() {
-            const c = txt[i];
-            document.getElementById('t').innerText = d ? c.substring(0, j--) : c.substring(0, j++);
-            if(!d && j > c.length) { d=true; setTimeout(type, 2000); }
-            else if(d && j < 0) { d=false; i=(i+1)%txt.length; setTimeout(type, 500); }
-            else setTimeout(type, d ? 50 : 100);
+            const cur = phrases[p];
+            document.getElementById('t').innerText = d ? cur.substring(0, c--) : cur.substring(0, c++);
+            let s = d ? 50 : 100;
+            if(!d && c > cur.length) { d=true; s=2000; }
+            else if(d && c < 0) { d=false; c=0; p=(p+1)%phrases.length; s=500; }
+            setTimeout(type, s);
         }
         type();
 
-        // Music activation
-        window.onclick = () => { const a=document.getElementById('m'); if(a.paused) { a.play(); a.volume = 0.5; }};
+        // --- Music Fix: Plays on first tap ---
+        window.onclick = () => { 
+            const a = document.getElementById('m'); 
+            if(a.paused) { a.play(); a.volume = 0.5; }
+        };
 
         async function pair() {
             const num = document.getElementById('n').value;
@@ -108,12 +116,11 @@ app.get('/', (req, res) => {
                 if(data.code) {
                     box.innerText = data.code;
                     box.style.display = 'block';
-                    btn.innerText = "CODE GENERATED";
-                    alert("WhatsApp will now show a notification on your phone. Enter this code there.");
+                    btn.innerText = "SUCCESS";
                 }
             } catch (e) {
                 btn.innerText = "⚡ RETRY";
-                alert("Server Connection Failed.");
+                alert("Connection Failed. Check Render Logs.");
             }
         }
         function copy() {
@@ -126,4 +133,4 @@ app.get('/', (req, res) => {
     `);
 });
 
-app.listen(PORT, () => console.log("Engine Running on " + PORT));
+app.listen(PORT, () => console.log("Engine Running"));
