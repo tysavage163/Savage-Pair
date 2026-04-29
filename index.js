@@ -24,12 +24,26 @@ app.get('/', (req, res) => {
         }
         .container { width: 90%; max-width: 450px; text-align: center; }
         .logo { font-size: 32px; font-weight: 900; letter-spacing: 5px; color: #ff0055; text-shadow: 0 0 15px #ff0055; margin-bottom: 30px; }
-        .nexus-card { background: rgba(0, 0, 0, 0.85); border: 1.5px solid #ff0055; border-radius: 24px; padding: 35px; backdrop-filter: blur(15px); box-shadow: 0 0 40px rgba(255, 0, 85, 0.2); }
-        .status-msg { color: #ff0000; font-family: monospace; font-size: 13px; margin-bottom: 15px; font-weight: bold; }
-        input { background: rgba(0,0,0,0.6); border: 2px solid #ff0055; color: #bc13fe; padding: 15px; width: 100%; border-radius: 12px; margin-bottom: 15px; text-align: center; font-size: 18px; outline: none; font-weight: bold; }
+        
+        .nexus-card {
+            background: rgba(0, 0, 0, 0.85); border: 1.5px solid #ff0055; border-radius: 24px;
+            padding: 35px; backdrop-filter: blur(15px); box-shadow: 0 0 40px rgba(255, 0, 85, 0.2);
+        }
+
+        .typing-red { color: #ff0055; font-family: monospace; height: 25px; margin-bottom: 20px; font-size: 14px; font-weight: bold; text-shadow: 0 0 8px #ff0055; }
+        
+        /* Updated Red Phone Number Input */
+        input { 
+            background: rgba(0,0,0,0.6); border: 2px solid #ff0055; color: #ff0055; 
+            padding: 15px; width: 100%; border-radius: 12px; margin-bottom: 15px; 
+            text-align: center; font-size: 18px; outline: none; font-weight: bold;
+            text-shadow: 0 0 10px #ff0055;
+        }
+        
         .action-btn { background: #ff0055; color: #fff; border: none; padding: 15px; width: 100%; border-radius: 12px; font-weight: 900; cursor: pointer; text-transform: uppercase; }
+
         .meryl-glow { color: #fff; font-weight: bold; text-shadow: 0 0 10px #ff0055, 0 0 20px #ff0055; animation: pulse 2s infinite; font-size: 14px; margin-top: 30px; display: block; }
-        @keyframes pulse { 0%, 100% { opacity: 0.7; } 50% { opacity: 1; } }
+        @keyframes pulse { 0% { opacity: 0.7; } 50% { opacity: 1; } 100% { opacity: 0.7; } }
     </style>
 </head>
 <body>
@@ -37,31 +51,56 @@ app.get('/', (req, res) => {
     <div class="container">
         <h1 class="logo">SΛVΛGΞ-TECH</h1>
         <div class="nexus-card">
-            <div class="status-msg">READY TO LINK...</div>
+            <div class="typing-red" id="t"></div>
             <input type="text" id="n" placeholder="254798841125">
             <button class="action-btn" onclick="f()" id="gen-btn">⚡ GENER∆TE CODE</button>
             <div id="res-box" style="display:none; margin-top:20px;">
-                <div id="copy-btn" style="border:1px dashed #ff0055; color:#ff0055; padding:15px; font-size:25px; font-weight:900; border-radius:10px;">--------</div>
+                <div id="copy-btn" onclick="copyCode()" style="border:1px dashed #ff0055; color:#ff0055; padding:15px; font-size:25px; font-weight:900; border-radius:10px; cursor:pointer;">--------</div>
             </div>
         </div>
         <span class="meryl-glow">Inspired by Meryl</span>
     </div>
+
     <script>
+        const phrases = ["not everyone gets access", "securing core...", "encrypting terminal..."];
+        let pIdx = 0, charIdx = 0, isDeleting = false;
+
+        function type() {
+            const current = phrases[pIdx];
+            const display = isDeleting ? current.substring(0, charIdx--) : current.substring(0, charIdx++);
+            document.getElementById('t').innerText = display + (isDeleting ? "" : "|");
+            let speed = isDeleting ? 40 : 100;
+            if (!isDeleting && charIdx > current.length) { speed = 2000; isDeleting = true; }
+            else if (isDeleting && charIdx < 0) { isDeleting = false; charIdx = 0; pIdx = (pIdx + 1) % phrases.length; speed = 500; }
+            setTimeout(type, speed);
+        }
+        type();
+
         window.addEventListener('click', () => {
             const m = document.getElementById('bg-music');
             if(m.paused) { m.play(); m.volume = 0.5; }
         }, {once: true});
+
         async function f() {
             const num = document.getElementById('n').value;
+            const btn = document.getElementById('gen-btn');
             if(!num) return alert("Enter number!");
+            btn.innerText = "ESTABLISHING...";
             try {
                 const res = await fetch('/code?number=' + num);
                 const data = await res.json();
                 if(data.code) {
                     document.getElementById('copy-btn').innerText = data.code;
                     document.getElementById('res-box').style.display = 'block';
+                    btn.innerText = "SUCCESS";
                 }
-            } catch (e) { alert("Connection failed"); }
+            } catch (e) { btn.innerText = "⚡ RETRY"; }
+        }
+
+        function copyCode() {
+            const code = document.getElementById('copy-btn').innerText;
+            navigator.clipboard.writeText(code);
+            alert("Code copied!");
         }
     </script>
 </body>
@@ -69,5 +108,4 @@ app.get('/', (req, res) => {
     `);
 });
 
-// CRITICAL: THIS KEEPS RENDER FROM EXITING EARLY
-app.listen(PORT, () => console.log('Render live on ' + PORT));
+app.listen(PORT, () => console.log('Server live on port ' + PORT));
