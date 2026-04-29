@@ -15,13 +15,19 @@ app.get('/', (req, res) => {
     <title>SΛVΛGΞ-TECH | QUANTUM</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { background: #000; background-image: url('https://raw.githubusercontent.com/tysavage163/Savage-Pair/main/bg.png'); background-size: cover; color: #fff; font-family: 'Segoe UI', sans-serif; display: flex; align-items: center; justify-content: center; min-height: 100vh; }
+        body { 
+            background: #000;
+            background-image: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), 
+            url('https://raw.githubusercontent.com/tysavage163/Savage-Pair/main/bg.png');
+            background-size: cover; background-position: center; color: #fff; font-family: 'Segoe UI', sans-serif;
+            display: flex; align-items: center; justify-content: center; min-height: 100vh;
+        }
         .container { width: 90%; max-width: 450px; text-align: center; }
         .logo { font-size: 32px; font-weight: 900; color: #00f2ff; text-shadow: 0 0 15px #00f2ff; margin-bottom: 30px; }
         .nexus-card { background: rgba(0, 0, 0, 0.85); border: 1.5px solid #00f2ff; border-radius: 24px; padding: 35px; box-shadow: 0 0 40px rgba(0, 242, 255, 0.2); }
         .typing-cyan { color: #00f2ff; font-family: monospace; font-weight: bold; margin-bottom: 20px; text-shadow: 0 0 8px #00f2ff; }
         input { background: rgba(0,0,0,0.6); border: 2px solid #00f2ff; color: #00f2ff; padding: 15px; width: 100%; border-radius: 12px; margin-bottom: 15px; text-align: center; font-size: 18px; font-weight: bold; }
-        .action-btn { background: #00f2ff; color: #000; border: none; padding: 15px; width: 100%; border-radius: 12px; font-weight: 900; cursor: pointer; }
+        .action-btn { background: #00f2ff; color: #000; border: none; padding: 15px; width: 100%; border-radius: 12px; font-weight: 900; cursor: pointer; text-transform: uppercase; }
         .contact-dev { margin-top: 20px; font-size: 11px; color: rgba(255,255,255,0.6); text-decoration: none; display: block; }
         .contact-dev span { color: #00f2ff; font-weight: bold; }
     </style>
@@ -34,6 +40,9 @@ app.get('/', (req, res) => {
             <div class="typing-cyan">ESTABLISHING QUANTUM LINK...</div>
             <input type="text" id="n" placeholder="254798841125">
             <button class="action-btn" onclick="f()">⚡ GENER∆TE CODE</button>
+            <div id="res-box" style="display:none; margin-top:20px;">
+                <div id="copy-btn" onclick="copyCode()" style="border:1px dashed #00f2ff; color:#00f2ff; padding:15px; font-size:25px; font-weight:900; border-radius:10px; cursor:pointer;">--------</div>
+            </div>
         </div>
         <a href="https://wa.me/254798841125" class="contact-dev">Having trouble pairing? <span>Contact developer</span></a>
     </div>
@@ -42,13 +51,23 @@ app.get('/', (req, res) => {
             const m = document.getElementById('bg-music');
             if(m.paused) { m.play(); m.volume = 0.5; }
         }, {once: true});
+
         async function f() {
             const num = document.getElementById('n').value;
+            if(!num) return alert("Enter number!");
             try {
                 const res = await fetch('${RENDER_URL}/code?number=' + num);
                 const data = await res.json();
-                if(data.code) alert("Code: " + data.code);
+                if(data.code) {
+                    document.getElementById('copy-btn').innerText = data.code;
+                    document.getElementById('res-box').style.display = 'block';
+                }
             } catch (e) { alert("Backend Offline"); }
+        }
+        function copyCode() {
+            const code = document.getElementById('copy-btn').innerText;
+            navigator.clipboard.writeText(code);
+            alert("Code copied!");
         }
     </script>
 </body>
