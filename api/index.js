@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const app = express();
+const PORT = process.env.PORT || 3000;
 
 app.use(cors());
 
@@ -15,6 +16,7 @@ app.get('/', (req, res) => {
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SΛVΛGΞ-TECH | QUANTUM</title>
     <style>
+        /* Base Styles */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { 
             background: #000;
@@ -27,6 +29,7 @@ app.get('/', (req, res) => {
         .container { width: 90%; max-width: 450px; text-align: center; }
         .logo { font-size: 32px; font-weight: 900; letter-spacing: 5px; color: #00f2ff; text-shadow: 0 0 15px #00f2ff; margin-bottom: 30px; }
         
+        /* Card Design */
         .nexus-card {
             background: rgba(0, 0, 0, 0.85); border: 1.5px solid #00f2ff; border-radius: 24px;
             padding: 35px; backdrop-filter: blur(15px); box-shadow: 0 0 40px rgba(0, 242, 255, 0.2);
@@ -46,10 +49,10 @@ app.get('/', (req, res) => {
         .section { display: none; margin-top: 20px; animation: fadeIn 0.4s ease; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* ⌨️ Cyan Blue Typing Animation */
+        /* Cyan Blue Typing Animation */
         .typing-cyan { color: #00f2ff; font-family: monospace; height: 25px; margin-bottom: 20px; font-size: 14px; font-weight: bold; text-shadow: 0 0 8px #00f2ff; }
 
-        /* 📱 Cyan Blue Input Number */
+        /* Cyan Blue Input Number */
         input { background: rgba(0,0,0,0.6); border: 2px solid #00f2ff; color: #00f2ff; padding: 15px; width: 100%; border-radius: 12px; margin-bottom: 15px; text-align: center; font-size: 18px; outline: none; font-weight: bold; text-shadow: 0 0 5px #00f2ff; }
         
         .action-btn { background: #00f2ff; color: #000; border: none; padding: 15px; width: 100%; border-radius: 12px; font-weight: 900; cursor: pointer; text-transform: uppercase; }
@@ -58,7 +61,7 @@ app.get('/', (req, res) => {
         #qr-image { width: 200px; height: 200px; display: none; }
         .qr-loading { color: #000; font-weight: bold; padding: 80px 0; }
 
-        /* ✨ Glitter Glowing Meryl Credit */
+        /* Glitter Glowing Meryl Credit */
         .meryl-glitter { 
             color: #fff; font-weight: bold; font-size: 14px; margin-top: 30px; display: block;
             text-shadow: 0 0 10px #ff0055, 0 0 20px #ff0055, 0 0 30px #ff0055; 
@@ -175,6 +178,10 @@ app.get('/', (req, res) => {
 </body>
 </html>
     `);
+});
+
+app.listen(PORT, () => {
+    console.log('Server is running on port ' + PORT);
 });
 
 module.exports = app;
