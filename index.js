@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const app = express();
+const PORT = process.env.PORT || 3000;
 
 app.use(cors());
 
@@ -10,7 +11,7 @@ app.get('/', (req, res) => {
 <html lang="en">
 <head>
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SΛVΛGΞ-TECH | NEXUS</title>
+    <title>SΛVΛGΞ-TECH | CORE</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { 
@@ -29,7 +30,6 @@ app.get('/', (req, res) => {
             padding: 35px; backdrop-filter: blur(15px); box-shadow: 0 0 40px rgba(255, 0, 85, 0.2);
         }
 
-        /* 🔘 Method Selection Buttons */
         .method-box { display: flex; flex-direction: column; gap: 15px; margin-bottom: 10px; }
         .method-btn { 
             background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); 
@@ -41,24 +41,18 @@ app.get('/', (req, res) => {
         .btn-title { font-weight: bold; font-size: 18px; color: #fff; }
         .btn-desc { font-size: 12px; color: rgba(255,255,255,0.5); margin-top: 2px; }
 
-        /* ⌨️ Functional Sections */
         .section { display: none; margin-top: 20px; animation: fadeIn 0.4s ease; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* Status text in Red */
         .status-msg { color: #ff0000; font-family: monospace; font-size: 13px; margin-bottom: 15px; font-weight: bold; }
-
-        /* Purplish Input */
         input { background: rgba(0,0,0,0.6); border: 2px solid #ff0055; color: #bc13fe; padding: 15px; width: 100%; border-radius: 12px; margin-bottom: 15px; text-align: center; font-size: 18px; outline: none; font-weight: bold; }
         
         .action-btn { background: #ff0055; color: #fff; border: none; padding: 15px; width: 100%; border-radius: 12px; font-weight: 900; cursor: pointer; text-transform: uppercase; }
 
-        /* Real QR Display */
         #qr-container { background: white; padding: 15px; border-radius: 15px; display: inline-block; margin-top: 15px; min-width: 230px; min-height: 230px; }
         #qr-image { width: 200px; height: 200px; display: none; }
         .qr-loading { color: #000; font-weight: bold; padding: 80px 0; }
 
-        /* ✨ Glowing Meryl Credit */
         .meryl-glow { color: #fff; font-weight: bold; text-shadow: 0 0 10px #ff0055, 0 0 20px #ff0055; animation: pulse 2s infinite; font-size: 14px; margin-top: 30px; display: block; }
         @keyframes pulse { 0% { opacity: 0.7; } 50% { opacity: 1; } 100% { opacity: 0.7; } }
         
@@ -68,23 +62,15 @@ app.get('/', (req, res) => {
 <body>
     <div class="container">
         <h1 class="logo">SΛVΛGΞ-TECH</h1>
-        
         <div class="nexus-card">
             <div id="selection-area" class="method-box">
                 <div class="method-btn" onclick="showSection('pair-section')">
                     <div class="icon">🔗</div>
-                    <div>
-                        <div class="btn-title">PAIR CODE</div>
-                        <div class="btn-desc">Connect with your phone number</div>
-                    </div>
+                    <div><div class="btn-title">PAIR CODE</div><div class="btn-desc">Connect with phone number</div></div>
                 </div>
-
                 <div class="method-btn" onclick="showSection('qr-section')">
                     <div class="icon">🔳</div>
-                    <div>
-                        <div class="btn-title">QR SCAN</div>
-                        <div class="btn-desc">Scan QR code to connect</div>
-                    </div>
+                    <div><div class="btn-title">QR SCAN</div><div class="btn-desc">Scan QR code to connect</div></div>
                 </div>
             </div>
 
@@ -92,10 +78,8 @@ app.get('/', (req, res) => {
                 <div class="status-msg" id="pair-status">READY TO LINK...</div>
                 <input type="text" id="n" placeholder="254798841125">
                 <button class="action-btn" onclick="f()" id="gen-btn">⚡ GENER∆TE CODE</button>
-                
                 <div id="res-box" style="display:none; margin-top:20px;">
                     <div id="copy-btn" onclick="copyCode()" style="border:1px dashed #ff0055; color:#ff0055; padding:15px; font-size:25px; font-weight:900; border-radius:10px; cursor:pointer;">--------</div>
-                    <div style="font-size:10px; color:#ff0055; margin-top:8px;">TAP CODE TO COPY</div>
                 </div>
                 <button onclick="back()" class="back-link">← BACK TO SELECTION</button>
             </div>
@@ -109,51 +93,34 @@ app.get('/', (req, res) => {
                 <button onclick="back()" class="back-link">← BACK TO SELECTION</button>
             </div>
         </div>
-
         <span class="meryl-glow">Inspired by Meryl</span>
     </div>
 
     <script>
         let qrInterval;
-
         function showSection(id) {
             document.getElementById('selection-area').style.display = 'none';
             document.getElementById(id).style.display = 'block';
             if(id === 'qr-section') startQR();
         }
-
         function back() {
             clearInterval(qrInterval);
             document.querySelectorAll('.section').forEach(s => s.style.display = 'none');
             document.getElementById('selection-area').style.display = 'flex';
         }
-
         async function startQR() {
             const img = document.getElementById('qr-image');
             const loader = document.getElementById('qr-loading');
-            
             qrInterval = setInterval(async () => {
-                try {
-                    // Update this path to where your bot serves the QR image
-                    const url = "/qr"; 
-                    img.src = url + "?t=" + Date.now();
-                    img.onload = () => {
-                        img.style.display = 'block';
-                        loader.style.display = 'none';
-                    };
-                } catch (e) { loader.innerText = "RETRIEVING..."; }
+                img.src = "/qr?t=" + Date.now();
+                img.onload = () => { img.style.display = 'block'; loader.style.display = 'none'; };
             }, 3000);
         }
-
         async function f() {
             const num = document.getElementById('n').value;
             const btn = document.getElementById('gen-btn');
-            const status = document.getElementById('pair-status');
             if(!num) return alert("Enter number!");
-            
             btn.innerText = "ESTABLISHING...";
-            status.innerText = "LINKING TERMINAL...";
-            
             try {
                 const res = await fetch('/code?number=' + num);
                 const data = await res.json();
@@ -161,23 +128,23 @@ app.get('/', (req, res) => {
                     document.getElementById('copy-btn').innerText = data.code;
                     document.getElementById('res-box').style.display = 'block';
                     btn.innerText = "SUCCESS";
-                    status.innerText = "CODE GENERATED";
                 }
-            } catch (e) { 
-                btn.innerText = "⚡ RETRY";
-                status.innerText = "CONNECTION FAILED";
-            }
+            } catch (e) { btn.innerText = "⚡ RETRY"; }
         }
-
         function copyCode() {
             const code = document.getElementById('copy-btn').innerText;
             navigator.clipboard.writeText(code);
-            alert("Code copied: " + code);
+            alert("Code copied!");
         }
     </script>
 </body>
 </html>
     `);
+});
+
+// THIS KEEPS RENDER ONLINE
+app.listen(PORT, () => {
+    console.log('Server live on port ' + PORT);
 });
 
 module.exports = app;
