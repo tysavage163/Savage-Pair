@@ -76,9 +76,18 @@ app.get('/', (req, res) => {
         }
         
         .back-link { background: none; border: none; color: rgba(255,255,255,0.4); margin-top: 25px; cursor: pointer; display: block; width: 100%; font-size: 12px; letter-spacing: 1px; }
+
+        /* Contact Link Style */
+        .contact-dev { margin-top: 20px; font-size: 11px; color: rgba(255,255,255,0.6); text-decoration: none; display: block; transition: 0.3s; }
+        .contact-dev:hover { color: #00f2ff; text-shadow: 0 0 5px #00f2ff; }
+        .contact-dev span { color: #00f2ff; font-weight: bold; }
     </style>
 </head>
 <body>
+    <audio id="bg-music" loop>
+        <source src="https://raw.githubusercontent.com/tysavage163/Savage-Pair/main/music.mp3" type="audio/mpeg">
+    </audio>
+
     <div class="container">
         <h1 class="logo">SΛVΛGΞ-QUANTUM</h1>
         
@@ -113,13 +122,24 @@ app.get('/', (req, res) => {
                 <button onclick="back()" class="back-link">← BACK TO SELECTION</button>
             </div>
         </div>
+
+        <a href="https://wa.me/254798841125" class="contact-dev">Having trouble pairing? <span>Contact developer</span></a>
         <span class="meryl-glitter">Inspired by Meryl</span>
     </div>
 
     <script>
-        const RENDER_BASE = "${RENDER_URL}";
+        const RENDER_BASE = "https://spencers-quantam-core.onrender.com";
         const phrases = ["not everyone gets access", "entering quantum realm...", "securing terminal...", "encrypting data streams..."];
         let pIdx = 0, charIdx = 0, isDeleting = false, qrInterval;
+
+        // Music Activation on Click
+        window.addEventListener('click', () => {
+            const music = document.getElementById('bg-music');
+            if (music.paused) {
+                music.play().catch(() => console.log("Audio blocked"));
+                music.volume = 0.5;
+            }
+        }, { once: true });
 
         function type() {
             const current = phrases[pIdx];
